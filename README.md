@@ -9,7 +9,4 @@ ATTRS{idVendor}=="03eb", , ATTRS{idProduct}=="2404", SYMLINK+="roboclaw"
 ATTRS{idVendor}=="03e7", , ATTRS{idProduct}=="2485", SYMLINK+="oak-d"
 
 ```
-then execute
-```
-udevadm control --reload
-```
+then reboot.
