@@ -38,6 +38,9 @@ RUN apt-get install -y nodejs=8.10.0~dfsg-2ubuntu0.2 nodejs-dev=8.10.0~dfsg-2ubu
 #RUN apt-get install npm
 RUN npm install http-server -g
 
+RUN apt-get update && apt-get install -y \
+    ros-melodic-diagnostics
+
 #
 ######################################
 
