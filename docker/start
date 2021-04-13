@@ -1,3 +1,3 @@
 #!/bin/sh
 #docker run -it --rm -w /root/lidar_ws --name car  -p 9090:9090 -p 11311:11311 --device /dev/car-controller -e SHELL=/bin/bash --device /dev/car-lidar -v ~/lidar_ws:/root/lidar_ws brianerickson/ros /bin/bash -c "screen -q; exit"
-docker run -it --rm -w /root/ws --name car  --network host --device /dev/roboclaw -e SHELL=/bin/bash -v ~/red-crash/ws:/root/ws brianerickson/ros /bin/bash -c "screen -q; exit"
+docker run -it --privileged --rm -w /root/ws --name car --volume=/dev:/dev:rw --device-cgroup-rule='c 189:* rmw' --network host --device /dev/ps3-joystick --device /dev/input/js0 --device /dev/roboclaw --device /dev/oak-d --device /dev/lidar -e SHELL=/bin/bash -v ~/red-crash/ws:/root/ws brianerickson/ros /bin/bash -c "screen -q; exit"
