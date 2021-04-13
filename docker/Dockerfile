@@ -49,7 +49,10 @@ RUN apt-get update && apt-get install -y \
     ros-melodic-diagnostics \
     ros-melodic-joy \
     ros-melodic-joystick-drivers \
-    ros-melodic-teleop-twist-joy
+    ros-melodic-teleop-twist-joy \
+    sox \
+    libsox-fmt-mp3 \
+    alsa-utils
 
 RUN python3 -m pip install pathlib
 
