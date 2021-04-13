@@ -1,12 +1,53 @@
-# red-crash
+# Red-Crash
+<div style="float:right"><img src="media/red-crash-400.jpg"></img></div>
+This is a living project for the Red-Crash robot that I am building as part of the Social Distancer team's entry into the <a href='https://opencv.org/opencv-ai-competition-2021/'>2021 OpenCV AI Contest</a>. This is not intended as an instructable or how-to, but as an open way to expose my work and living documentation for myself.
+
+## Planned capabilities
+- Indoor Navigation
+- Lidar SLAM
+- Voice Control
+- 3d Vision based obstacle detection
+- AI Vision based object detection
+
+## Hardware so far
+
+- GoBilda BeeLine chassis
+- RPLidar A3
+- OAK-D Camera
+- RoboClaw motor controller
+- Raspberry PI 4b 8gb
+- USB Speaker
+
+## Techniques / Software
+
+- ROS Melodic
+- Customized RoboClaw ROS Driver
+- Components run within Docker
+- Designed for RosBridge / WebViz monitoring
 
 ## Hacking
 
+### Rasberry Pi Prep
+Use standard image and and install Docker. I started with Ubuntu Ubuntu 20.04.2 LTS
+
+### Docker
+Build the docker image by executing docker/build
+Dockerfile is in docker/Dockerfile
+Launch the docker image by executing docker/start
+The Docker container will be running "screen", so you can create multiple terminals
+
+### ROS
+all ROS code and modules are in the ws folder.
+go.launch is intended to start all of the basic functions
+
+
 ### udev rules
-To make "nice" device names, put following in /etc/udev/rules.d/80-local.rules.  This will cause your devices to be listed under /dev/roboclaw and /dev/oak-d
+To make "nice" and more importantly permanent device names, put following in /etc/udev/rules.d/89-local.rules.  This will cause your devices to be listed under /dev/roboclaw and /dev/oak-d, etc.
 ```
 ATTRS{idVendor}=="03eb", , ATTRS{idProduct}=="2404", SYMLINK+="roboclaw"
 ATTRS{idVendor}=="03e7", , ATTRS{idProduct}=="2485", SYMLINK+="oak-d"
+ATTRS{idVendor}=="10c4", , ATTRS{idProduct}=="ea60", SYMLINK+="lidar"
+ATTRS{idVendor}=="054c", , ATTRS{idProduct}=="0268", SYMLINK+="ps3-joystick", MODE="0666"
 
 ```
 then reboot.
