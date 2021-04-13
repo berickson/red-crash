@@ -1,8 +1,6 @@
 # Red-Crash
 <div style="float:right"><img src="media/red-crash-400.jpg"></img></div>
-This is a living project for the Red-Crash robot that I am building as part of the Social Distancer team's entry into the <a href='https://opencv.org/opencv-ai-competition-2021/'>2021 OpenCV AI Contest</a>. This is not intended as an instructable or how-to, but as an open way to expose my work and living documentation for myself.
-
-I also keep a <a href="https://docs.google.com/document/d/1KZ22YjeubW1ue_mEz4UHqUBV7ftl6lgPlzKsD_fNuHw/edit?usp=sharing">todo list in Google docs</a>.
+This is a living project for the Red-Crash robot that I am building as part of the Social Distancer team's entry into the <a href='https://opencv.org/opencv-ai-competition-2021/'>2021 OpenCV AI Contest</a>. This is not intended as an instructable or how-to, but as an open way to expose my work and living documentation for myself. I also keep a <a href="https://docs.google.com/document/d/1KZ22YjeubW1ue_mEz4UHqUBV7ftl6lgPlzKsD_fNuHw/edit?usp=sharing">todo list in Google docs</a>.
 
 ## Planned capabilities
 - Indoor Navigation
@@ -29,8 +27,24 @@ I also keep a <a href="https://docs.google.com/document/d/1KZ22YjeubW1ue_mEz4UHq
 
 ## Hacking
 
+### VsCode and SSH
+I tend to do all development through SSH and VsCode connected remotely from my desktop computer. 
+
+### Git
+
+This project uses submodules.  To clone, use 
+```
+git clone --recurse-submodules git@github.com:berickson/red-crash.git
+```
+To 
+get latest changes
+```
+git pull --recurse-submodules 
+``` 
+
 ### Rasberry Pi Prep
-Use standard image and and install Docker. I started with Ubuntu Ubuntu 20.04.2 LTS
+Use standard image and and install Docker. I started with Ubuntu Ubuntu Server 20.04.2 LTS
+hostname is set to red-crash
 
 ### Docker
 Build the docker image by executing docker/build
@@ -39,8 +53,16 @@ Launch the docker image by executing docker/start
 The Docker container will be running "screen", so you can create multiple terminals
 
 ### ROS
-all ROS code and modules are in the ws folder.
+All ROS code and modules are in the ws folder.
 go.launch is intended to start all of the basic functions
+
+### WebViz
+
+Run WebViz docker on desktop PC with
+```
+docker run -p 8080:8080 cruise/webviz
+```
+Then browse to http://localhost:8080/?rosbridge-websocket-url=ws://red-crash:9090
 
 
 ### udev rules
