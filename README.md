@@ -2,6 +2,8 @@
 <div style="float:right"><img src="media/red-crash-400.jpg"></img></div>
 This is a living project for the Red-Crash robot that I am building as part of the Social Distancer team's entry into the <a href='https://opencv.org/opencv-ai-competition-2021/'>2021 OpenCV AI Contest</a>. This is not intended as an instructable or how-to, but as an open way to expose my work and living documentation for myself.
 
+I also keep a <a href="https://docs.google.com/document/d/1KZ22YjeubW1ue_mEz4UHqUBV7ftl6lgPlzKsD_fNuHw/edit?usp=sharing">todo list in Google docs</a>.
+
 ## Planned capabilities
 - Indoor Navigation
 - Lidar SLAM
