@@ -4,3 +4,6 @@
 [submodule "ws/src/rplidar_ros"]
 	path = ws/src/rplidar_ros
 	url = git@github.com:robopeak/rplidar_ros.git
+[submodule "ws/src/oakd"]
+	path = ws/src/oakd
+	url = git@github.com:berickson/oakd.git
