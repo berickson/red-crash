@@ -29,5 +29,4 @@ stuff "source devel/setup.bash\n roslaunch --wait tf.launch\n"
 select 6
 stuff "source devel/setup.bash\n"
 
-hardstatus alwayslastline
-hardstatus string '%{= kG}[ %{G}%H %{gk}]%{wk}%?%-Lw%?%{=b kR}(%{W}%n*%f %t%?(%u)%?%{=b kR})%{= w}%?%+Lw%?%? %{g}]'
+hardstatus alwayslastline '%{= kG}[%{G}%H%{kG}] %{kw}%?%-w%?%{=b kR}(%{W}%n* %t%?(%u)%?%{=b kR})%{= w}%?%+w%?%? %{g}]'
