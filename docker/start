@@ -1,5 +1,5 @@
-#!/bin/sh
-#docker run -it --rm -w /root/lidar_ws --name car  -p 9090:9090 -p 11311:11311 --device /dev/car-controller -e SHELL=/bin/bash --device /dev/car-lidar -v ~/lidar_ws:/root/lidar_ws brianerickson/ros /bin/bash -c "screen -q; exit"
+#!/bin/bash
+
 docker run \
   -it \
   --privileged \
@@ -18,4 +18,4 @@ docker run \
   --device /dev/lidar \
   -e SHELL=/bin/bash \
   -v ~/red-crash/ws:/root/ws \
-  brianerickson/ros /bin/bash -c "screen -q; exit"
+  brianerickson/ros /bin/bash -c "screen -c launch_all.screenrc;exit"
