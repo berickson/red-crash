@@ -2,6 +2,7 @@ startup_message off
 
 screen -dmA -t roscore
 screen -dmA -t joy
+screen -dmA -t roboclaw
 screen -dmA -t rosbridge
 screen -dmA -t rplidar
 screen -dmA -t tf
@@ -14,15 +15,18 @@ select 1
 stuff "source devel/setup.bash\n roslaunch --wait joy.launch\n"
 
 select 2
-stuff "source devel/setup.bash\n roslaunch --wait rosbridge.launch\n"
+stuff "source devel/setup.bash\n roslaunch --wait roboclaw.launch\n"
 
 select 3
-stuff "source devel/setup.bash\n roslaunch --wait rplidar.launch\n"
+stuff "source devel/setup.bash\n roslaunch --wait rosbridge.launch\n"
 
 select 4
-stuff "source devel/setup.bash\n roslaunch --wait tf.launch\n"
+stuff "source devel/setup.bash\n roslaunch --wait rplidar.launch\n"
 
 select 5
+stuff "source devel/setup.bash\n roslaunch --wait tf.launch\n"
+
+select 6
 stuff "source devel/setup.bash\n"
 
 hardstatus alwayslastline
