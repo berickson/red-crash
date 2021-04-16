@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <launch>
   <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+  <include file="cam.launch" />
   <include file="roboclaw.launch" />
-  <include file="rplidar.launch"/>
+  <include file="rplidar.launch" />
   <include file="tf.launch" />
 </launch>

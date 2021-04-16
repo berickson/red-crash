@@ -6,6 +6,7 @@ screen -dmA -t roboclaw
 screen -dmA -t rosbridge
 screen -dmA -t rplidar
 screen -dmA -t tf
+screen -dmA -t cam
 screen -dmA -t run
 
 select 0
@@ -27,7 +28,7 @@ select 5
 stuff "source devel/setup.bash\n roslaunch --wait tf.launch\n"
 
 select 6
-stuff "source devel/setup.bash\n"
+stuff "source devel/setup.bash\n roslaunch --wait cam.launch\n"
 
 #hardstatus alwayslastline "%H %w"
 hardstatus alwayslastline '%{= kG}[%{G}%H%{kG}] %{kw}%?%-w%?%{=b kR}(%{W}%n %t%?(%u)%?%{=b kR})%{= w}%?%+w%?%? %{g}]'

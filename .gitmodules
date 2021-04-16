@@ -7,3 +7,6 @@
 [submodule "ws/src/oakd"]
 	path = ws/src/oakd
 	url = git@github.com:berickson/oakd.git
+[submodule "ws/src/vision_opencv"]
+	path = ws/src/vision_opencv
+	url = git@github.com:berickson/vision_opencv.git
