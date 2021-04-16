@@ -10,25 +10,25 @@ screen -dmA -t cam
 screen -dmA -t run
 
 select 0
-stuff "roscore\n"
+#stuff "roscore\n"
 
 select 1
-stuff "source devel/setup.bash\n roslaunch --wait joy.launch\n"
+#stuff "source devel/setup.bash\n roslaunch --wait joy.launch\n"
 
 select 2
-stuff "source devel/setup.bash\n roslaunch --wait roboclaw.launch\n"
+#stuff "source devel/setup.bash\n roslaunch --wait roboclaw.launch\n"
 
 select 3
-stuff "source devel/setup.bash\n roslaunch --wait rosbridge.launch\n"
+#stuff "source devel/setup.bash\n roslaunch --wait rosbridge.launch\n"
 
 select 4
-stuff "source devel/setup.bash\n roslaunch --wait rplidar.launch\n"
+#stuff "source devel/setup.bash\n roslaunch --wait rplidar.launch\n"
 
 select 5
-stuff "source devel/setup.bash\n roslaunch --wait tf.launch\n"
+#stuff "source devel/setup.bash\n roslaunch --wait tf.launch\n"
 
 select 6
-stuff "source devel/setup.bash\n roslaunch --wait cam.launch\n"
+#stuff "source devel/setup.bash\n roslaunch --wait cam.launch\n"
 
 #hardstatus alwayslastline "%H %w"
 hardstatus alwayslastline '%{= kG}[%{G}%H%{kG}] %{kw}%?%-w%?%{=b kR}(%{W}%n %t%?(%u)%?%{=b kR})%{= w}%?%+w%?%? %{g}]'
