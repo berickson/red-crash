@@ -54,9 +54,11 @@ RUN apt-get update && apt-get install -y \
     libsox-fmt-mp3 \
     alsa-utils \
     python3-pyaudio \
+    python3-espeak \
+    ffmpeg \
     flac
 
-RUN python3 -m pip install pathlib SpeechRecognition
+RUN python3 -m pip install pathlib SpeechRecognition pyttsx3 gtts
 
 # special stuff for luxonis, see https://gist.github.com/atinfinity/c3255077e23164438c19544687e05b84
 
