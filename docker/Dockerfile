@@ -52,9 +52,11 @@ RUN apt-get update && apt-get install -y \
     ros-melodic-teleop-twist-joy \
     sox \
     libsox-fmt-mp3 \
-    alsa-utils
+    alsa-utils \
+    python3-pyaudio \
+    flac
 
-RUN python3 -m pip install pathlib
+RUN python3 -m pip install pathlib SpeechRecognition
 
 # special stuff for luxonis, see https://gist.github.com/atinfinity/c3255077e23164438c19544687e05b84
 
