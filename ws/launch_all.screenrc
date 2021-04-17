@@ -3,10 +3,11 @@ startup_message off
 screen -dmA -t roscore
 screen -dmA -t joy
 screen -dmA -t roboclaw
-screen -dmA -t rosbridge
-screen -dmA -t rplidar
+screen -dmA -t bridge
+screen -dmA -t lidar
 screen -dmA -t tf
 screen -dmA -t cam
+screen -dmA -t speech
 screen -dmA -t run
 
 select 0
@@ -29,6 +30,12 @@ stuff "source devel/setup.bash\n roslaunch --wait tf.launch\n"
 
 select 6
 stuff "source devel/setup.bash\n roslaunch --wait cam.launch\n"
+
+select 7
+stuff "source devel/setup.bash\n roslaunch --wait speech.launch\n"
+
+select 8
+stuff "source devel/setup.bash\n"
 
 #hardstatus alwayslastline "%H %w"
 hardstatus alwayslastline '%{= kG}[%{G}%H%{kG}] %{kw}%?%-w%?%{=b kR}(%{W}%n %t%?(%u)%?%{=b kR})%{= w}%?%+w%?%? %{g}]'
