@@ -5,7 +5,7 @@ docker run \
   --privileged \
   --rm \
   -w /root/ws \
-  --env AUDIODEV=front:Device \
+  --env AUDIODEV=default:Device \
   --name car \
   --group-add audio \
   --volume=/dev:/dev:rw \
