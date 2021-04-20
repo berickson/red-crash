@@ -9,6 +9,7 @@
     <arg name="left_motor_number" default="1"/>
     <arg name="base_width" default="0.413"/>
     <arg name="run_diag" default="true"/>
+    <arg name="serial_timeout" default="1.0"/>
 
     <node if="$(arg run_diag)" pkg="roboclaw_node" type="roboclaw_node.py" name="roboclaw_node">
         <param name="~dev" value="$(arg dev)"/>
@@ -18,6 +19,7 @@
         <param name="~ticks_per_meter" value="$(arg ticks_per_meter)"/>
         <param name="~left_motor_number" value="$(arg left_motor_number)"/>
         <param name="~base_width" value="$(arg base_width)"/>
+        <param name="~serial_timeout" value="$(arg serial_timeout)"/>
     </node>
 
     <node pkg="diagnostic_aggregator" type="aggregator_node"
