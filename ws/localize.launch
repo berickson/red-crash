@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="map_server" pkg="map_server" type="map_server" args="/root/ws/maps/lab.yaml">
+  </node>
+  <node name="amcl" pkg="amcl" type="amcl">
+  </node>
+
+</launch>

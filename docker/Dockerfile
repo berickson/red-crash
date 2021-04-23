@@ -60,6 +60,15 @@ RUN apt-get update && apt-get install -y \
 
 RUN python3 -m pip install pathlib SpeechRecognition pyttsx3 gtts
 
+# Mapping
+
+RUN apt-get update --fix-missing && \
+    apt-get install -y \
+    ros-melodic-gmapping \
+    ros-melodic-map-server \
+    ros-melodic-amcl \
+    ros-melodic-move-base
+
 # special stuff for luxonis, see https://gist.github.com/atinfinity/c3255077e23164438c19544687e05b84
 
 # RUN apt-get update && apt-get install -y --no-install-recommends \
