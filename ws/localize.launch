@@ -2,7 +2,11 @@
 <launch>
   <node name="map_server" pkg="map_server" type="map_server" args="/root/ws/maps/lab.yaml">
   </node>
+
+  <!-- see http://wiki.ros.org/amcl -->
   <node name="amcl" pkg="amcl" type="amcl">
+    <param name="initial_cov_aa" value = "100"/>
+    <param name="transform_tolerance" value = "0.2"/>
   </node>
 
 </launch>

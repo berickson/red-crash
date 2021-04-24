@@ -8,6 +8,8 @@ screen -dmA -t lidar
 screen -dmA -t tf
 screen -dmA -t cam
 screen -dmA -t speech
+screen -dmA -t local
+screen -dmA -t nav
 screen -dmA -t run
 
 select 0
@@ -35,6 +37,12 @@ select 7
 stuff "source devel/setup.bash\n roslaunch --wait speech.launch\n"
 
 select 8
+stuff "source devel/setup.bash\n roslaunch --wait localize.launch\n"
+
+select 8
+stuff "source devel/setup.bash\n"
+
+select 9
 stuff "source devel/setup.bash\n"
 
 #hardstatus alwayslastline "%H %w"
