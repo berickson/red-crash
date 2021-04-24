@@ -1,5 +1,8 @@
 local_costmap:
-  global_frame: odom
+  global_frame: map
   robot_base_frame: base_link
   rolling_window: true
-  inflation_radius: 0.2
+  inflation_radius: 0.5 # minimum distance to obstacle
+  cost_scaling_factory: 2.0 # fade away ratio
+  publish_frequency: 2.0
+  static_map: false

@@ -1,21 +1,10 @@
-DWAPlannerROS:
-  {
-    min_vel_trans: 0.05,
-    max_vel_trans: 0.3,
-    max_vel_y: 0.0,
-    min_vel_y: 0.0,
-    min_vel_x: 0.05,
-    max_vel_x: 0.3,
-
-  }
-
 TrajectoryPlannerROS:
   {
     acc_lim_theta: 3.2,
     acc_lim_x: 2.5,
     acc_lim_y: 2.5,
     angular_sim_granularity: 0.025,
-    dwa: false,  
+    dwa: false,
     escape_reset_dist: 0.1,
     escape_reset_theta: 1.57079632679,
     escape_vel: -0.1,

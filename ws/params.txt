@@ -1,0 +1,148 @@
+amcl: {base_frame_id: base_link, beam_skip_distance: 0.5, beam_skip_threshold: 0.3,
+  do_beamskip: false, first_map_only: false, global_frame_id: map, gui_publish_rate: -1.0,
+  initial_cov_aa: 0.010710810764181646, initial_cov_xx: 0.011290035591854356, initial_cov_yy: 0.006880872707422165,
+  initial_pose_a: -0.6714335906346254, initial_pose_x: 20.717133171719638, initial_pose_y: 20.53367144451075,
+  kld_err: 0.01, kld_z: 0.99, laser_lambda_short: 0.1, laser_likelihood_max_dist: 2.0,
+  laser_max_beams: 30, laser_max_range: -1.0, laser_min_range: -1.0, laser_model_type: likelihood_field,
+  laser_sigma_hit: 0.2, laser_z_hit: 0.95, laser_z_max: 0.05, laser_z_rand: 0.05,
+  laser_z_short: 0.1, max_particles: 5000, min_particles: 100, odom_alpha1: 0.2, odom_alpha2: 0.2,
+  odom_alpha3: 0.2, odom_alpha4: 0.2, odom_alpha5: 0.2, odom_frame_id: odom, odom_model_type: diff,
+  recovery_alpha_fast: 0.0, recovery_alpha_slow: 0.0, resample_interval: 2, restore_defaults: false,
+  save_pose_rate: 0.5, tf_broadcast: true, transform_tolerance: 0.2, update_min_a: 0.523598775598,
+  update_min_d: 0.2, use_map_topic: false}
+cameras:
+  repub:
+    compressed: {format: jpeg, jpeg_quality: 80, png_level: 9}
+    compressedDepth: {depth_max: 10.0, depth_quantization: 100.0, png_level: 9}
+    theora: {keyframe_frequency: 64, optimize_for: 1, quality: 31, target_bitrate: 800000}
+diagnostic_aggregator:
+  analyzers:
+    roboclaw: {num_items: 1, path: Roboclaw, startswith: roboclaw_node, type: diagnostic_aggregator/GenericAnalyzer}
+move_base:
+  TrajectoryPlannerROS: {acc_lim_theta: 3.2, acc_lim_x: 2.5, acc_lim_y: 2.5, angular_sim_granularity: 0.025,
+    dwa: true, escape_reset_dist: 0.1, escape_reset_theta: 1.57079632679, escape_vel: -0.1,
+    goal_distance_bias: 0.8, heading_lookahead: 0.325, heading_scoring: true, heading_scoring_timestep: 0.1,
+    holonomic_robot: false, max_vel_theta: 0.2, max_vel_x: 0.1, min_in_place_vel_theta: 0.2,
+    min_vel_theta: -1.0, min_vel_x: 0.0, occdist_scale: 0.01, orientation_mode: 1,
+    oscillation_reset_dist: 0.05, path_distance_bias: 0.6, restore_defaults: false,
+    sim_granularity: 0.025, sim_time: 1.7, simple_attractor: false, vtheta_samples: 20,
+    vx_samples: 20, y_vels: '-0.3,-0.1,0.1,-0.3'}
+  aggressive_reset: {reset_distance: 1.84}
+  base_global_planner: navfn/NavfnROS
+  base_local_planner: base_local_planner/TrajectoryPlannerROS
+  clearing_rotation_allowed: true
+  conservative_reset: {reset_distance: 3.0}
+  conservative_reset_dist: 3.0
+  controller_frequency: 20.0
+  controller_patience: 5.0
+  global_costmap:
+    footprint: '[[-0.297,0.2225],[0.135,0.2225],[0.135,-0.2225],[-0.297,-0.2225]]'
+    footprint_padding: 0.01
+    global_frame: map
+    height: 40
+    inflater_layer: {cost_scaling_factor: 0.5, enabled: true, inflate_unknown: false,
+      inflation_radius: 0.1}
+    obstacle_layer:
+      combination_method: 1
+      enabled: true
+      footprint_clearing_enabled: true
+      laser_scan_sensor: {clearing: true, combination_method: 1, data_type: LaserScan,
+        inf_is_valid: true, marking: true, max_obstacle_height: 3, min_obstacle_height: -3,
+        obstacle_range: 6.5, raytrace_range: 7, sensor_frame: laser_invert, topic: scan}
+      max_obstacle_height: 2.0
+      observation_sources: laser_scan_sensor
+    origin_x: 0.0
+    origin_y: 0.0
+    plugins:
+    - {name: obstacle_layer, type: 'costmap_2d::ObstacleLayer'}
+    - {name: inflater_layer, type: 'costmap_2d::InflationLayer'}
+    publish_frequency: 0.0
+    resolution: 0.05
+    robot_base_frame: base_link
+    robot_radius: 0.46
+    static_layer: {enabled: true}
+    static_map: true
+    transform_tolerance: 0.3
+    update_frequency: 5.0
+    width: 40
+  local_costmap:
+    footprint: '[[-0.297,0.2225],[0.135,0.2225],[0.135,-0.2225],[-0.297,-0.2225]]'
+    footprint_padding: 0.01
+    global_frame: map
+    height: 10
+    inflater_layer: {cost_scaling_factor: 0.5, enabled: true, inflate_unknown: false,
+      inflation_radius: 0.2}
+    inflation_radius: 0.2
+    obstacle_layer:
+      combination_method: 1
+      enabled: true
+      footprint_clearing_enabled: true
+      laser_scan_sensor: {clearing: true, combination_method: 1, data_type: LaserScan,
+        inf_is_valid: true, marking: true, max_obstacle_height: 3, min_obstacle_height: -3,
+        obstacle_range: 6.5, raytrace_range: 7, sensor_frame: laser_invert, topic: scan}
+      max_obstacle_height: 2.0
+      observation_sources: laser_scan_sensor
+    origin_x: 0.0
+    origin_y: 0.0
+    plugins:
+    - {name: obstacle_layer, type: 'costmap_2d::ObstacleLayer'}
+    - {name: inflater_layer, type: 'costmap_2d::InflationLayer'}
+    publish_frequency: 2.0
+    resolution: 0.05
+    robot_base_frame: base_link
+    robot_radius: 0.46
+    rolling_window: true
+    static_layer: {enabled: true}
+    static_map: false
+    transform_tolerance: 0.3
+    update_frequency: 5.0
+    width: 10
+  make_plan_add_unreachable_goal: true
+  make_plan_clear_costmap: true
+  max_planning_retries: -1
+  oscillation_distance: 0.5
+  oscillation_timeout: 0.0
+  planner_frequency: 0.0
+  planner_patience: 5.0
+  recovery_behavior_enabled: true
+  restore_defaults: false
+  shutdown_costmaps: false
+ps3_joy: {autorepeat_rate: 5, deadzone: 0.012, dev: /dev/input/js0}
+roboclaw_node: {address: 128, base_width: 0.413, baud: 115200, dev: /dev/roboclaw,
+  left_motor_number: 1, max_speed: 1.0, serial_timeout: 1.0, ticks_per_meter: 1782.86}
+rosapi: {params_glob: '[*]', services_glob: '[*]', topics_glob: '[*]'}
+rosbridge_websocket: {actual_port: 9090, address: 0.0.0.0, authenticate: false, bson_only_mode: false,
+  delay_between_messages: 0, fragment_timeout: 600, max_message_size: None, params_glob: '[*]',
+  port: 9090, retry_startup_delay: 5, services_glob: '[*]', topics_glob: '[*]', unregister_timeout: 10,
+  use_compression: false, websocket_external_port: None, websocket_ping_interval: 0,
+  websocket_ping_timeout: 30}
+rosdistro: 'melodic
+
+  '
+roslaunch:
+  uris: {host_red_crash__33421: 'http://red-crash:33421/', host_red_crash__33599: 'http://red-crash:33599/',
+    host_red_crash__33795: 'http://red-crash:33795/', host_red_crash__33887: 'http://red-crash:33887/',
+    host_red_crash__34061: 'http://red-crash:34061/', host_red_crash__34159: 'http://red-crash:34159/',
+    host_red_crash__34229: 'http://red-crash:34229/', host_red_crash__34563: 'http://red-crash:34563/',
+    host_red_crash__35053: 'http://red-crash:35053/', host_red_crash__35161: 'http://red-crash:35161/',
+    host_red_crash__35587: 'http://red-crash:35587/', host_red_crash__35823: 'http://red-crash:35823/',
+    host_red_crash__36445: 'http://red-crash:36445/', host_red_crash__36815: 'http://red-crash:36815/',
+    host_red_crash__37331: 'http://red-crash:37331/', host_red_crash__37539: 'http://red-crash:37539/',
+    host_red_crash__37783: 'http://red-crash:37783/', host_red_crash__38075: 'http://red-crash:38075/',
+    host_red_crash__38481: 'http://red-crash:38481/', host_red_crash__39291: 'http://red-crash:39291/',
+    host_red_crash__39335: 'http://red-crash:39335/', host_red_crash__39435: 'http://red-crash:39435/',
+    host_red_crash__40175: 'http://red-crash:40175/', host_red_crash__40899: 'http://red-crash:40899/',
+    host_red_crash__41285: 'http://red-crash:41285/', host_red_crash__41345: 'http://red-crash:41345/',
+    host_red_crash__43527: 'http://red-crash:43527/', host_red_crash__43997: 'http://red-crash:43997/',
+    host_red_crash__44169: 'http://red-crash:44169/', host_red_crash__44183: 'http://red-crash:44183/',
+    host_red_crash__45687: 'http://red-crash:45687/'}
+rosversion: '1.14.10
+
+  '
+rplidarNode: {angle_compensate: true, frame_id: laser_invert, inverted: true, scan_mode: Sensitivity,
+  serial_baudrate: 256000, serial_port: /dev/lidar}
+run_id: 82411f6e-a490-11eb-9367-dca632ec71bc
+rviz_1619222636696422122:
+  compressed: {mode: unchanged}
+teleop_node: {enable_button: 0, enable_turbo_button: 1, scale_angular: 1.57, scale_angular_turbo: 6.28,
+  scale_linear: 0.5, scale_linear_turbo: 2.0}
