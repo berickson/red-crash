@@ -1,7 +1,10 @@
 global_costmap:
   global_frame: map
   robot_base_frame: base_link
-  static_map: true
+  #static_map: true
   resolution: 0.050000
-  width: 40
-  height: 40
+#  width: 40
+#  height: 40
+  #inflation_radius: 3.5 # minimum distance to obstacle
+  #cost_scaling_factor: 20.0 # fade away ratio
+

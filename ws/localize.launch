@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <node name="map_server" pkg="map_server" type="map_server" args="/root/ws/maps/lab.yaml">
+  <node name="map_server" pkg="map_server" type="map_server" args="/root/ws/maps/house.yaml">
   </node>
 
   <!-- see http://wiki.ros.org/amcl -->

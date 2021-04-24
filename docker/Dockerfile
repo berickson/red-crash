@@ -68,7 +68,8 @@ RUN apt-get update --fix-missing && \
     ros-melodic-map-server \
     ros-melodic-amcl \
     ros-melodic-move-base \
-    ros-melodic-global-planner
+    ros-melodic-global-planner \
+    ros-melodic-dwa-local-planner
 
 # special stuff for luxonis, see https://gist.github.com/atinfinity/c3255077e23164438c19544687e05b84
 

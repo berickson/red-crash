@@ -1,17 +1,17 @@
 
 plugins:
+  - {name: static_layer, type: "costmap_2d::StaticLayer"}
   - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}
   - {name: inflater_layer, type: "costmap_2d::InflationLayer"}
-#  - {name: static_layer, type: "costmap_2d::StaticLayer"}
 
 inflater_layer:
-  inflation_radius: 0.7
-  cost_scaling_factor: 2.0
+  inflation_radius: 3.0
+  cost_scaling_factor: 1.0
 
 
 obstacle_layer:
-  observation_sources: laser_scan_sensor
-  laser_scan_sensor: {
+  observation_sources: rplidar
+  rplidar: {
     sensor_frame: laser_invert, 
     data_type: LaserScan, 
     topic: scan, marking: true, 
