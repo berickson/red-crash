@@ -4,11 +4,6 @@ plugins:
   - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}
   - {name: inflater_layer, type: "costmap_2d::InflationLayer"}
 
-inflater_layer:
-  inflation_radius: 3.0
-  cost_scaling_factor: 1.0
-
-
 obstacle_layer:
   observation_sources: rplidar
   rplidar: {

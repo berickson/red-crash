@@ -2,7 +2,6 @@ local_costmap:
   global_frame: odom
   robot_base_frame: base_link
   rolling_window: true
-  #inflation_radius: 1.0 # minimum distance to obstacle
-  #cost_scaling_factor: 20.0 # fade away ratio
+  inflation_radius: 1.0 # minimum distance to obstacle
+  cost_scaling_factor: 0.0 # fade away ratio
   publish_frequency: 2.0
-  static_map: false
