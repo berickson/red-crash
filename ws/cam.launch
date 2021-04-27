@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="image_transport" type="republish" name="republish" args="raw in:=cameras/main out:=cameras/repub"/>
     <node pkg="oakd" type="oakd.py" name="oakd" />
+    <node pkg="image_transport" type="republish" name="republish_main" args="raw in:=cameras/main out:=cameras_repub/main"/>
+    <node pkg="image_transport" type="republish" name="republish_left" args="raw in:=cameras/left out:=cameras_repub/left"/>
+    <node pkg="image_transport" type="republish" name="republish_right" args="raw in:=cameras/right out:=cameras_repub/right"/>
 </launch>
