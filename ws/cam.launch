@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="image_transport" type="republish" name="republish" args="raw in:=cameras/main out:=cameras/repub"/>
-    <node pkg="oakd" type="hello-world.py" name="oakd" />
+    <node pkg="oakd" type="oakd.py" name="oakd" />
 </launch>
