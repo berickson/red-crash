@@ -2,7 +2,14 @@
 <launch>
   <!-- during slam map_to_odom handled by gmapping -->
   <!-- <node pkg="tf" type="static_transform_publisher" name="map_to_odom" args="0.25 0 0 0 0 0 map odom 10" /> -->
-  <node pkg="tf" type="static_transform_publisher" name="base_link_to_camera" args="0.125 0 .150 0 0 0 base_link camera 10" />
+  <!-- 
+    for camera: (see http://docs.ros.org/en/api/sensor_msgs/html/msg/CameraInfo.html)
+  x should point to the right in the image
+  y should point down in the image
+  z should point into the plane of the image   
+  yaw is rotation about Z, pitch is rotation about Y, and roll is rotation about X
+  -->
+  <node pkg="tf" type="static_transform_publisher" name="base_link_to_camera" args="0.125 0 .150 1.570796 3.14159265359 1.570796 base_link camera 10" />
   <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser" args="0.072 0 .210 0 0 0 base_link laser 10" />
   <node pkg="tf" type="static_transform_publisher" name="laser_to_laser_invert" args="0 0 0 0 3.14159265359 0 laser laser_invert 10" />
 </launch>
