@@ -1,0 +1,14 @@
+# piano
+rostopic pub --once /move_base_simple/goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: "map"}, pose: {position: {x: 13.493, y: 24.894, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.33795 , w: 0.94116}}}'
+
+
+# front door
+rostopic pub --once /move_base_simple/goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: "map"}, pose: {position: {x: 17.368, y: 28.596, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: -0.70177 , w: 0.71241}}}'
+
+# family room
+rostopic pub --once /move_base_simple/goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: "map"}, pose: {position: {x: 16.945, y: 21.208, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0059336 , w: 0.99998}}}'
+
+
+# lab
+rostopic pub --once /move_base_simple/goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: "map"}, pose: {position: {x: 20.192, y: 20.34, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: -0.020294 , w: 0.97861}}}'
+
