@@ -1,6 +1,6 @@
 startup_message off
 
-screen -dmA -t roscore
+screen -dmA -t core
 screen -dmA -t joy
 screen -dmA -t roboclaw
 screen -dmA -t bridge
@@ -39,10 +39,10 @@ stuff "source devel/setup.bash\n roslaunch --wait speech.launch\n"
 select 8
 stuff "source devel/setup.bash\n roslaunch --wait localize.launch\n"
 
-select 8
-stuff "source devel/setup.bash\n"
-
 select 9
+stuff "source devel/setup.bash\n roslaunch --wait nav.launch\n"
+
+select 10
 stuff "source devel/setup.bash\n"
 
 #hardstatus alwayslastline "%H %w"
