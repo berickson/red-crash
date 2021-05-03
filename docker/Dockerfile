@@ -1,25 +1,23 @@
-#FROM osrf/ros:melodic-desktop-full
-FROM ros:melodic-perception
+#FROM osrf/ros:noetic-desktop-full
+FROM ros:noetic-perception
 # RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 RUN apt-get update && apt-get install -y \
   git \
   screen \
   # because DeserializationError cannot deserialize: unknown error handler name 'rosmsg' 
-  ros-melodic-genpy \
-  ros-melodic-rosbridge-suite \
-  ros-melodic-hector-*
+  ros-noetic-genpy \
+  ros-noetic-rosbridge-suite \
+  ros-noetic-hector-*
 
 RUN apt-get update && apt-get install -y \
   htop \
   nano \
-  python-catkin-tools
+  python3-catkin-tools
 
 #####################################
 
 RUN apt-get update && apt-get install -y \
-  python-pip \
   python3-pip \
-  && pip install --upgrade pip \
   && python3 -m pip install --upgrade pip
 
 RUN pip install psutil platformio
@@ -27,29 +25,31 @@ RUN pip install psutil platformio
 RUN python3 -m pip install numpy opencv-python depthai
 
 RUN apt-get update && apt-get install -y \
-  ros-melodic-rosserial-arduino \
-  ros-melodic-rosserial-server \
-  ros-melodic-rosserial-python \
-  ros-melodic-rosserial-* \
-  ros-melodic-tf2-web-republisher
+  ros-noetic-rosserial-arduino \
+  #ros-noetic-rosserial-server \
+  ros-noetic-rosserial-python \
+  ros-noetic-rosserial-* 
+  #ros-noetic-tf2-web-republisher
   
 
-  # ros-melodic-rosserial-embeddedlinux ros-kinetic-rosserial-windows ros-kinetic-rosserial-server ros-kinetic-rosserial-python
+  # ros-noetic-rosserial-embeddedlinux ros-kinetic-rosserial-windows ros-kinetic-rosserial-server ros-kinetic-rosserial-python
 
 
 # Install special version of node because of conflict, see
 # https://github.com/ros/rosdistro/issues/27302
-RUN apt-get install -y nodejs=8.10.0~dfsg-2ubuntu0.2 nodejs-dev=8.10.0~dfsg-2ubuntu0.2 npm
+#RUN apt-get install -y nodejs=8.10.0~dfsg-2ubuntu0.2 nodejs-dev=8.10.0~dfsg-2ubuntu0.2 npm
+RUN apt-get install -y nodejs npm
+
 #RUN apt-get install npm
 RUN npm install http-server -g
 
 RUN apt-get update && apt-get install -y \
     python3-catkin-pkg-modules \
     python3-rospkg-modules \
-    ros-melodic-diagnostics \
-    ros-melodic-joy \
-    ros-melodic-joystick-drivers \
-    ros-melodic-teleop-twist-joy \
+    ros-noetic-diagnostics \
+    ros-noetic-joy \
+    ros-noetic-joystick-drivers \
+    ros-noetic-teleop-twist-joy \
     sox \
     libsox-fmt-mp3 \
     alsa-utils \
@@ -58,18 +58,18 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     flac
 
-RUN python3 -m pip install pathlib SpeechRecognition pyttsx3 gtts
+RUN python3 -m pip install pathlib SpeechRecognition pyttsx3 gtts catkin_tools
 
 # Mapping
 
 RUN apt-get update --fix-missing && \
     apt-get install -y \
-    ros-melodic-gmapping \
-    ros-melodic-map-server \
-    ros-melodic-amcl \
-    ros-melodic-move-base \
-    ros-melodic-global-planner \
-    ros-melodic-dwa-local-planner
+    ros-noetic-gmapping \
+    ros-noetic-map-server \
+    ros-noetic-amcl \
+    ros-noetic-move-base \
+    ros-noetic-global-planner \
+    ros-noetic-dwa-local-planner
 
 # special stuff for luxonis, see https://gist.github.com/atinfinity/c3255077e23164438c19544687e05b84
 

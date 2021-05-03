@@ -13,3 +13,6 @@
 [submodule "ws/src/speech_ros"]
 	path = ws/src/speech_ros
 	url = git@github.com:berickson/speech_ros.git
+[submodule "ws/src/oakd_cpp/depthai-core"]
+	path = ws/src/oakd_cpp/depthai-core
+	url = git@github.com:luxonis/depthai-core.git

@@ -1,4 +1,5 @@
-blacklist: []
+blacklist:
+- oakd_cpp
 build_space: build
 catkin_make_args: []
 cmake_args:
