@@ -9,6 +9,7 @@ docker run \
   --name car \
   --group-add audio \
   --volume=/dev:/dev:rw \
+  --volume /dev/bus/usb:/dev/bus/usb \
   --device-cgroup-rule='c 189:* rmw' \
   --network host \
   --device /dev/ps3-joystick \
@@ -18,4 +19,4 @@ docker run \
   --device /dev/lidar \
   -e SHELL=/bin/bash \
   -v ~/red-crash/ws:/root/ws \
-  brianerickson/ros /bin/bash -c "screen -c launch_all.screenrc;exit"
+  brianerickson/ros /bin/bash -c "screen -c launch_${1:-all}.screenrc;exit"

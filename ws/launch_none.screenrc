@@ -1,0 +1,3 @@
+startup_message off
+
+hardstatus alwayslastline '%{= kG}[%{G}%H%{kG}] %{kw}%?%-w%?%{=b kR}(%{W}%n %t%?(%u)%?%{=b kR})%{= w}%?%+w%?%? %{g}]'
