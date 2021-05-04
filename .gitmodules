@@ -4,15 +4,15 @@
 [submodule "ws/src/rplidar_ros"]
 	path = ws/src/rplidar_ros
 	url = git@github.com:robopeak/rplidar_ros.git
-[submodule "ws/src/oakd"]
-	path = ws/src/oakd
-	url = git@github.com:berickson/oakd.git
 [submodule "ws/src/vision_opencv"]
 	path = ws/src/vision_opencv
 	url = git@github.com:berickson/vision_opencv.git
 [submodule "ws/src/speech_ros"]
 	path = ws/src/speech_ros
 	url = git@github.com:berickson/speech_ros.git
-[submodule "ws/src/oakd_cpp/depthai-core"]
-	path = ws/src/oakd_cpp/depthai-core
-	url = git@github.com:luxonis/depthai-core.git
+[submodule "ws/src/depthai-ros"]
+	path = ws/src/depthai-ros
+	url = git@github.com:berickson/depthai-ros.git
+[submodule "ws/src/depthai-ros-examples"]
+	path = ws/src/depthai-ros-examples
+	url = git@github.com:berickson/depthai-ros-examples.git
