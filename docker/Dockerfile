@@ -69,30 +69,33 @@ RUN apt-get update --fix-missing && \
     ros-noetic-amcl \
     ros-noetic-move-base \
     ros-noetic-global-planner \
-    ros-noetic-dwa-local-planner
+    ros-noetic-dwa-local-planner \
+    ros-noetic-vision-msgs
 
 # special stuff for luxonis, see https://gist.github.com/atinfinity/c3255077e23164438c19544687e05b84
 
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#         sudo \
-#         less \
-#         emacs \
-#         build-essential \
-#         cmake \
-#         git \
-#         tmux \
-#         bash-completion \
-#         command-not-found \
-#         software-properties-common \
-#         xsel \
-#         xdg-user-dirs \
-#         wget \
-#         curl \
-#         usbutils \
-#         udev \
-#         && \
-#     apt-get clean && \
-#     rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        sudo \
+        less \
+        emacs \
+        build-essential \
+        cmake \
+        git \
+        tmux \
+        bash-completion \
+        command-not-found \
+        software-properties-common \
+        xsel \
+        xdg-user-dirs \
+        wget \
+        curl \
+        usbutils \
+        udev \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+  RUN wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencis.sh | bash; return 0
 
 # # https://github.com/luxonis/depthai-docker/blob/master/Dockerfile-depthai#L11
 # RUN echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | tee /etc/udev/rules.d/80-movidius.rules
