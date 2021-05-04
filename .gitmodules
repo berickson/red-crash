@@ -16,9 +16,3 @@
 [submodule "ws/src/oakd_cpp/depthai-core"]
 	path = ws/src/oakd_cpp/depthai-core
 	url = git@github.com:luxonis/depthai-core.git
-[submodule "ws/src/depthai-ros"]
-	path = ws/src/depthai-ros
-	url = https://github.com/luxonis/depthai-ros.git
-[submodule "ws/src/depthai-ros-examples"]
-	path = ws/src/depthai-ros-examples
-	url = https://github.com/luxonis/depthai-ros-examples.git
