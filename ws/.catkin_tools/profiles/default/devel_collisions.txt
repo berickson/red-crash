@@ -1,1 +1,2 @@
-/root/ws/devel/./cmake.lock 148
+/root/ws/devel/./cmake.lock 183
+/root/ws/devel/lib/libnodelet_stereo.so 3
