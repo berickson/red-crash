@@ -86,16 +86,19 @@ include_directories(
 
 
 add_library(
-  nodelet_stereo 
+  StereoNodelet 
   stereo_nodelet.cpp
   stereo_pipeline.cpp)
 
-add_dependencies(nodelet_stereo ${${PROJECT_NAME}_EXPORTED_TARGETS}
+add_dependencies(
+  StereoNodelet
+   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS} 
   # ${PROJECT_NAME}
 )
 
-target_link_libraries(nodelet_stereo
+target_link_libraries(
+  StereoNodelet
   ${catkin_LIBRARIES}
   depthai::core
   #${PROJECT_NAME}

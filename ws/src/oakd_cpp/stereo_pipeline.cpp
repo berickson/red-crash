@@ -1,7 +1,7 @@
 #include "stereo_pipeline.hpp"
 
 
-void StereoExampe::initDepthaiDev(){
+void StereoPipeline::initDepthaiDev(){
     
 
     bool withDepth = true;
@@ -20,6 +20,8 @@ void StereoExampe::initDepthaiDev(){
     auto xoutDepth   = _p.create<dai::node::XLinkOut>();
     auto xoutRectifL = _p.create<dai::node::XLinkOut>();
     auto xoutRectifR = _p.create<dai::node::XLinkOut>();
+
+    int queue_length = 1;
 
     // XLinkOut
     xoutLeft->setStreamName("left");
@@ -45,8 +47,8 @@ void StereoExampe::initDepthaiDev(){
 
     if (withDepth) {
         // StereoDepth
-        stereo->setOutputDepth(outputDepth);
-        stereo->setOutputRectified(outputRectified);
+        // stereo->setOutputDepth(outputDepth);
+        // stereo->setOutputRectified(outputRectified);
         stereo->setConfidenceThreshold(200);
         stereo->setRectifyEdgeFillColor(0); // black, to better see the cutout
         //stereo->loadCalibrationFile("../../../../depthai/resources/depthai.calib");
@@ -79,17 +81,17 @@ void StereoExampe::initDepthaiDev(){
 
     // CONNECT TO DEVICE
      _dev = std::make_unique<dai::Device>(_p);
-     _dev->startPipeline();
+     // _dev->startPipeline(); // starts automatically
 
-     _opImageStreams.push_back(_dev->getOutputQueue("left", 30, false));
-     _opImageStreams.push_back(_dev->getOutputQueue("right", 30, false));
+     _opImageStreams.push_back(_dev->getOutputQueue("left", queue_length, false));
+     _opImageStreams.push_back(_dev->getOutputQueue("right", queue_length, false));
     //  if (withDepth) _opImageStreams.push_back(_dev->getOutputQueue("disparity", 30, false));
-     if (withDepth) _opImageStreams.push_back(_dev->getOutputQueue("depth", 30, false));
-     if (withDepth) _opImageStreams.push_back(_dev->getOutputQueue("rectified_left", 30, false));
-     if (withDepth) _opImageStreams.push_back(_dev->getOutputQueue("rectified_right", 30, false));
+     if (withDepth) _opImageStreams.push_back(_dev->getOutputQueue("depth", queue_length, false));
+     if (withDepth) _opImageStreams.push_back(_dev->getOutputQueue("rectified_left", queue_length, false));
+     if (withDepth) _opImageStreams.push_back(_dev->getOutputQueue("rectified_right", queue_length, false));
     
 }
 
-std::vector<std::shared_ptr<dai::DataOutputQueue>> StereoExampe::getExposedImageStreams(){
+std::vector<std::shared_ptr<dai::DataOutputQueue>> StereoPipeline::getExposedImageStreams(){
         return _opImageStreams;
 }

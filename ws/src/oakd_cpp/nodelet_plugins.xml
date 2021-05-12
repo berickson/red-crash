@@ -1,5 +1,5 @@
-<library path="lib/libnodelet_stereo">
-  <class name="oakd_cppStereoNodelet" type="aokd_cpp::StereoNodelet" base_class_type="nodelet::Nodelet">
+<library path="lib/libStereoNodelet">
+  <class name="oakd_cpp/StereoNodelet" type="oakd_cpp::StereoNodelet" base_class_type="nodelet::Nodelet">
   <description>
   This is stereo publishing nodelet.
   </description>

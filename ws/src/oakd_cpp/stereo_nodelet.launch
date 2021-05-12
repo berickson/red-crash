@@ -35,22 +35,25 @@
     </include>
 
 
-    <node name="stereo_publisher" pkg="depthai_examples" type="stereo_node" output="screen" required="true">
+    <!-- <node name="stereo_publisher" pkg="oakd_cpp" type="stereo_node" output="screen" required="true">
         <param name="camera_name" value="$(arg camera_name)"/>
         <param name="camera_param_uri" value="$(arg camera_param_uri)"/>
-    </node>            
+    </node>             -->
 
 
     <!-- ~~~~~~~~~~~~~~~~~~~~~~~~  depth_image_proc nodelet below ~~~~~~~~~~~~~~~~~~~ -->
 
-    <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager" output="screen"/>
+    <!-- <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager" output="screen"/> -->
     
-    <!-- <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager" output="screen">
+    <node pkg="nodelet" type="nodelet" name="nodelet_manager"  args="manager" output="screen">
         <param name="camera_name" value="$(arg camera_name)"/>
         <param name="camera_param_uri" value="$(arg camera_param_uri)"/>
-    </node> -->
+    </node>
 
-
+    <node pkg="nodelet" type="nodelet" name="oakd_stereo_nodelet"
+        args="load oakd_cpp/StereoNodelet nodelet_manager">
+    </node>
+<!--
     <node pkg="nodelet" type="nodelet" name="depth_image_convertion_nodelet"
         args="load depth_image_proc/convert_metric nodelet_manager">
         <remap from="image_raw" to="/stereo_publisher/stereo/depth"/>    
@@ -65,7 +68,8 @@
         <remap from="points" to="/stereo_publisher/stereo/points"/>
     </node>
 
-    <!-- Rviz configuration -->
+   
   <node type="rviz" name="rviz" pkg="rviz" args="-d $(find depthai_examples)/rviz/stereo_nodelet.rviz" />
 
+-->
 </launch>

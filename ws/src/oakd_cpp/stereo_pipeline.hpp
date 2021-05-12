@@ -5,10 +5,10 @@
 #include "depthai/depthai.hpp"
 
 
-class StereoExampe{
+class StereoPipeline{
     public:
-    StereoExampe() = default;
-    ~StereoExampe() = default;
+    StereoPipeline() = default;
+    ~StereoPipeline() = default;
 
     void initDepthaiDev();
 

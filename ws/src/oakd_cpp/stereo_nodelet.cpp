@@ -16,7 +16,7 @@
 #include <depthai_bridge/BridgePublisher.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
 
-namespace depthai_examples{
+namespace oakd_cpp{
 
 
  class StereoNodelet : public nodelet::Nodelet
@@ -25,22 +25,28 @@ namespace depthai_examples{
         virtual void onInit(){
 
             ros::NodeHandle pnh("~");
+            ROS_ERROR("***** StereoNodelet::onInit");
             
             std::string deviceName;
             std::string camera_param_uri;
             int bad_params = 0;
+            int queue_length = 1;
 
-            bad_params += !pnh.getParam("camera_name", deviceName);
-            bad_params += !pnh.getParam("camera_param_uri", camera_param_uri);
-
-            if (bad_params > 0)
+            if(!pnh.getParam("camera_name", deviceName))
             {
-                throw std::runtime_error("Couldn't find one of the parameters");
+                ROS_ERROR("Couldn't getParam camera_name");
+                throw std::runtime_error("Couldn't getParam camera_name");
+            }
+            if(!pnh.getParam("camera_param_uri", camera_param_uri))
+            {
+                ROS_ERROR("Couldn't getParam camera_param_uri");
+                throw std::runtime_error("Couldn't getParam camara_param_uri");
             }
 
-            StereoExampe stero_pipeline;
-            stero_pipeline.initDepthaiDev();
-            std::vector<std::shared_ptr<dai::DataOutputQueue>> imageDataQueues = stero_pipeline.getExposedImageStreams();
+
+            StereoPipeline stereo_pipeline;
+            stereo_pipeline.initDepthaiDev();
+            std::vector<std::shared_ptr<dai::DataOutputQueue>> imageDataQueues = stereo_pipeline.getExposedImageStreams();
             
             std::vector<ros::Publisher> imgPubList;
             std::vector<std::string> frameNames;
@@ -63,7 +69,7 @@ namespace depthai_examples{
                                                                                             &converter, 
                                                                                             std::placeholders::_1, 
                                                                                             std::placeholders::_2) , 
-                                                                                            30,
+                                                                                            queue_length,
                                                                                             left_uri,
                                                                                             "left");
 
@@ -78,7 +84,7 @@ namespace depthai_examples{
                                                                                             &rightconverter, 
                                                                                             std::placeholders::_1, 
                                                                                             std::placeholders::_2) , 
-                                                                                            30,
+                                                                                            queue_length,
                                                                                             right_uri,
                                                                                             "right");
 
@@ -93,7 +99,7 @@ namespace depthai_examples{
                                                                                                             // and image type is also same we can reuse it
                                                                                             std::placeholders::_1, 
                                                                                             std::placeholders::_2) , 
-                                                                                            30,
+                                                                                            queue_length,
                                                                                             stereo_uri,
                                                                                             "stereo");
 
@@ -108,7 +114,7 @@ namespace depthai_examples{
         }
 };
 
-PLUGINLIB_EXPORT_CLASS(depthai_examples::StereoNodelet, nodelet::Nodelet)
+PLUGINLIB_EXPORT_CLASS(oakd_cpp::StereoNodelet, nodelet::Nodelet)
 
 
 }   // namespace depthai_examples
