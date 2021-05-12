@@ -1,2 +1,0 @@
-/root/ws/devel/./cmake.lock 264
-/root/ws/devel/lib/libnodelet_stereo.so 8

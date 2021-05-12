@@ -3,4 +3,5 @@ devel
 install
 logs
 .catkin_tools
+devel_collisions.txt
 
