@@ -13,13 +13,21 @@
 
 #include <depthai_bridge/BridgePublisher.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
+#include <thread>
+#include <chrono>
 
 namespace oakd_cpp {
 
 class StereoNodelet : public nodelet::Nodelet
 {
+    std::thread worker_;
+
     public:
-        virtual void onInit(){
+        virtual void onInit() {
+            worker_ =  std::thread(&StereoNodelet::run, this);
+        }
+
+        void run() {
 
             ros::NodeHandle node_handle("~");
             ROS_INFO("starting oakd_cpp::StereoNodelet");
@@ -102,7 +110,12 @@ class StereoNodelet : public nodelet::Nodelet
             // We can add the rectified frames also similar to these publishers. 
             // Left them out so that users can play with it by adding and removing
 
-            ros::spin();
+            ROS_INFO("looping oakd_cpp::StereoNodelet");
+            while(ros::ok()) {
+                std::this_thread::sleep_for (std::chrono::milliseconds(1));
+            }
+
+            ROS_INFO("exiting stereo_nodelet.cpp");
 
             return ;
         }

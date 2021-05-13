@@ -50,7 +50,7 @@
         <param name="camera_param_uri" value="$(arg camera_param_uri)"/>
     </node>
 
-    <node pkg="nodelet" type="nodelet" name="oakd_stereo_nodelet"
+    <node pkg="nodelet" type="nodelet" name="oakd_stereo_nodelet" output="screen"
         args="load oakd_cpp/StereoNodelet nodelet_manager">
     </node>
 <!--

@@ -106,6 +106,28 @@ target_link_libraries(
   opencv_highgui
 )
 
+add_executable(
+  stereo_node 
+  stereo_node.cpp
+  stereo_pipeline.cpp)
+
+add_dependencies(
+  stereo_node
+   ${${PROJECT_NAME}_EXPORTED_TARGETS}
+  ${catkin_EXPORTED_TARGETS} 
+  # ${PROJECT_NAME}
+)
+
+target_link_libraries(
+  stereo_node
+  ${catkin_LIBRARIES}
+  depthai::core
+  #${PROJECT_NAME}
+  opencv_imgproc
+  opencv_highgui
+)
+
+
 
 # hunter_private_data(
 #     URL "https://artifacts.luxonis.com/artifactory/luxonis-depthai-data-local/network/mobilenet-ssd_openvino_2021.2_6shave.blob"
