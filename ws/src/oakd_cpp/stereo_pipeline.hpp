@@ -14,7 +14,7 @@ class StereoPipeline{
 
     std::vector<std::shared_ptr<dai::DataOutputQueue>> getExposedImageStreams();
 
-    private:
+    //private:
     std::vector<std::shared_ptr<dai::DataOutputQueue>> _opImageStreams;
     std::unique_ptr<dai::Device> _dev;
     dai::Pipeline _p;

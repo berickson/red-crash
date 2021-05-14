@@ -33,6 +33,7 @@ find_package(catkin REQUIRED COMPONENTS
   vision_msgs
   depthai_bridge
   message_filters
+  image_transport
 )
 
 set(_opencv_version 4)
@@ -99,6 +100,7 @@ add_dependencies(
 
 target_link_libraries(
   StereoNodelet
+  #image_transport
   ${catkin_LIBRARIES}
   depthai::core
   #${PROJECT_NAME}
@@ -125,6 +127,7 @@ target_link_libraries(
   #${PROJECT_NAME}
   opencv_imgproc
   opencv_highgui
+  #image_transport
 )
 
 

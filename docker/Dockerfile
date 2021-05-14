@@ -22,7 +22,8 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip install psutil platformio
 
-RUN python3 -m pip install numpy opencv-python depthai
+RUN python3 -m pip install numpy opencv-python
+RUN python3 -m pip install depthai==2.1.0.0.dev0+df16f1724b2969896fd39c086978da1da816a1c0 --extra-index-url https://artifacts.luxonis.com/artifactory/luxonis-python-snapshot-local
 
 RUN apt-get update && apt-get install -y \
   ros-noetic-rosserial-arduino \

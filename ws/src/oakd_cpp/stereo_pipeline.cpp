@@ -64,19 +64,19 @@ void StereoPipeline::initDepthaiDev(){
         monoRight->out.link(stereo->right);
 
         stereo->syncedLeft.link(xoutLeft->input);
-        stereo->syncedRight.link(xoutRight->input);
+// stereo->syncedRight.link(xoutRight->input);
         if(outputRectified)
         {
             stereo->rectifiedLeft.link(xoutRectifL->input);
             stereo->rectifiedRight.link(xoutRectifR->input);
         }
         // stereo->disparity.link(xoutDisp->input);
-        stereo->depth.link(xoutDepth->input);
+// stereo->depth.link(xoutDepth->input);
 
     } else {
         // Link plugins CAM -> XLINK
         monoLeft->out.link(xoutLeft->input);
-        monoRight->out.link(xoutRight->input);
+//monoRight->out.link(xoutRight->input);
     }
 
     // CONNECT TO DEVICE

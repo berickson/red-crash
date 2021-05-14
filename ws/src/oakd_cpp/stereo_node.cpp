@@ -11,8 +11,10 @@
 
 #include "depthai/depthai.hpp"
 
+#include <cv_bridge/cv_bridge.h>
 #include <depthai_bridge/BridgePublisher.hpp>
 #include <depthai_bridge/ImageConverter.hpp>
+#include <image_transport/image_transport.h>
 #include <thread>
 #include <chrono>
 
@@ -39,8 +41,49 @@ int main(int argc, char** argv)  {
         throw std::runtime_error("Couldn't getParam camara_param_uri");
     }
 
-    StereoPipeline stereo_pipeline;
-    stereo_pipeline.initDepthaiDev();
+    StereoPipeline pipeline;
+    pipeline.initDepthaiDev();
+    // dai::Device device(pipeline._p);
+
+    auto queue_left = pipeline._dev->getOutputQueue("left");
+    image_transport::ImageTransport image_transport(node_handle);
+    auto pub_left = image_transport.advertise("oakd/left", queue_length);
+    cv_bridge::CvImagePtr cv_ptr(new cv_bridge::CvImage);
+
+
+    while(ros::ok()) {
+        if(pub_left.getNumSubscribers()) {
+            auto frame = queue_left->tryGet<dai::ImgFrame>();
+            if(frame ) {
+                static int i = 0;
+
+                dai::rosBridge::ImageConverter image_converter("oakd");
+                std::cout << "got frame " << i << std::endl;
+
+                auto mat = cv::Mat(frame->getHeight(), frame->getWidth(), CV_8UC1, frame->getData().data());
+                ros::Time time = ros::Time::now();            
+                std::cout << "1" << std::endl;
+                cv_ptr->header.stamp = time;
+                cv_ptr->header.frame_id = "/oakd";
+                cv_ptr->image = mat;
+                std::cout << "2" << std::endl;
+                sensor_msgs::Image msg;
+                image_converter.toRosMsg(frame, msg);
+                std::cout << "3" << std::endl;
+                pub_left.publish(msg);
+                ++i;
+            }
+        }
+
+        std::this_thread::sleep_for (std::chrono::milliseconds(1));
+
+
+        ros::spinOnce();
+    }
+
+    
+    return 0;
+/*
     std::vector<std::shared_ptr<dai::DataOutputQueue>> imageDataQueues = stereo_pipeline.getExposedImageStreams();
     
     std::vector<ros::Publisher> imgPubList;
@@ -106,6 +149,6 @@ int main(int argc, char** argv)  {
 
     ROS_INFO("exiting stereo_node main.cpp");
     return 0;
-
+*/
 }
 
