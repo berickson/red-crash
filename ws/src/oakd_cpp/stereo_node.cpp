@@ -46,33 +46,71 @@ int main(int argc, char** argv)  {
     // dai::Device device(pipeline._p);
 
     auto queue_left = pipeline._dev->getOutputQueue("left");
+    auto queue_right = pipeline._dev->getOutputQueue("right");
+    auto queue_depth = pipeline._dev->getOutputQueue("depth");
+    auto queue_rectified_left = pipeline._dev->getOutputQueue("rectified_left");
+    auto queue_rectified_right = pipeline._dev->getOutputQueue("rectified_right");
+
+
     image_transport::ImageTransport image_transport(node_handle);
     auto pub_left = image_transport.advertise("oakd/left", queue_length);
-    cv_bridge::CvImagePtr cv_ptr(new cv_bridge::CvImage);
-
+    auto pub_right = image_transport.advertise("oakd/right", queue_length);
+    auto pub_depth = image_transport.advertise("oakd/depth", queue_length);
+    auto pub_rectified_left = image_transport.advertise("oakd/rectified_left", queue_length);
+    auto pub_rectified_right = image_transport.advertise("oakd/rectified_right", queue_length);
 
     while(ros::ok()) {
-        if(pub_left.getNumSubscribers()) {
-            auto frame = queue_left->tryGet<dai::ImgFrame>();
-            if(frame ) {
-                static int i = 0;
+        auto left_frame = queue_left->tryGet<dai::ImgFrame>();
+        if(left_frame && pub_left.getNumSubscribers()) {
+            static int i = 0;
+            static dai::rosBridge::ImageConverter image_converter("oakd");
+            static sensor_msgs::Image msg;
+            std::cout << "left frame " << i << std::endl;
+            image_converter.toRosMsg(left_frame, msg);
+            pub_left.publish(msg);
+            ++i;
+        }
+        auto rectified_left_frame = queue_rectified_left->tryGet<dai::ImgFrame>();
+        if(rectified_left_frame && pub_rectified_left.getNumSubscribers()) {
+            static int i = 0;
+            static dai::rosBridge::ImageConverter image_converter("oakd");
+            static sensor_msgs::Image msg;
+            std::cout << "rectified_left frame " << i << std::endl;
+            image_converter.toRosMsg(rectified_left_frame, msg);
+            pub_rectified_left.publish(msg);
+            ++i;
+        }
 
-                dai::rosBridge::ImageConverter image_converter("oakd");
-                std::cout << "got frame " << i << std::endl;
 
-                auto mat = cv::Mat(frame->getHeight(), frame->getWidth(), CV_8UC1, frame->getData().data());
-                ros::Time time = ros::Time::now();            
-                std::cout << "1" << std::endl;
-                cv_ptr->header.stamp = time;
-                cv_ptr->header.frame_id = "/oakd";
-                cv_ptr->image = mat;
-                std::cout << "2" << std::endl;
-                sensor_msgs::Image msg;
-                image_converter.toRosMsg(frame, msg);
-                std::cout << "3" << std::endl;
-                pub_left.publish(msg);
-                ++i;
-            }
+        auto rectified_right_frame = queue_rectified_right->tryGet<dai::ImgFrame>();
+        if(rectified_right_frame && pub_rectified_right.getNumSubscribers()) {
+            static int i = 0;
+            static dai::rosBridge::ImageConverter image_converter("oakd");
+            static sensor_msgs::Image msg;
+            std::cout << "rectified_right frame " << i << std::endl;
+            image_converter.toRosMsg(rectified_right_frame, msg);
+            pub_rectified_right.publish(msg);
+            ++i;
+        }
+        auto right_frame = queue_right->tryGet<dai::ImgFrame>();
+        if(right_frame && pub_right.getNumSubscribers()) {
+            static int i = 0;
+            static dai::rosBridge::ImageConverter image_converter("oakd");
+            static sensor_msgs::Image msg;
+            std::cout << "right frame " << i << std::endl;
+            image_converter.toRosMsg(right_frame, msg);
+            pub_right.publish(msg);
+            ++i;
+        }
+        auto depth_frame = queue_depth->tryGet<dai::ImgFrame>();
+        if(depth_frame && pub_depth.getNumSubscribers()) {
+            static int i = 0;
+            static dai::rosBridge::ImageConverter image_converter("oakd");
+            static sensor_msgs::Image msg;
+            std::cout << "depth frame " << i << std::endl;
+            image_converter.toRosMsg(depth_frame, msg);
+            pub_depth.publish(msg);
+            ++i;
         }
 
         std::this_thread::sleep_for (std::chrono::milliseconds(1));
