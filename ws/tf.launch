@@ -10,6 +10,8 @@
   yaw is rotation about Z, pitch is rotation about Y, and roll is rotation about X
   -->
   <node pkg="tf" type="static_transform_publisher" name="base_link_to_camera" args="0.125 0 .150 1.570796 3.14159265359 1.570796 base_link camera 10" />
+  <node pkg="tf" type="static_transform_publisher" name="camera_to_stereo_left" args="-0.0375 0.0 0.0 0.0 0.0 0.0 camera stereo_left 10"/>
+  <node pkg="tf" type="static_transform_publisher" name="camera_to_stereo_right" args="0.0375 0.0 0.0 0.0 0.0 0.0 camera stereo_right 10"/>
   <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser" args="0.072 0 .210 0 0 0 base_link laser 10" />
   <node pkg="tf" type="static_transform_publisher" name="laser_to_laser_invert" args="0 0 0 0 3.14159265359 0 laser laser_invert 10" />
 </launch>
