@@ -1,0 +1,6 @@
+#! /bin/bash
+rosrun camera_calibration cameracalibrator.py --size 8x6 --square 0.02466 image:=/cameras/rgb/image_raw
+ camera:=/cameras/rgb/camera_info
+
+
+
