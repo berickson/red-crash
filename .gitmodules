@@ -19,3 +19,6 @@
 [submodule "ws/src/depthai-ros-examples"]
 	path = ws/src/depthai-ros-examples
 	url = git@github.com:berickson/depthai-ros-examples.git
+[submodule "ws/src/bus-servo"]
+	path = ws/src/bus-servo
+	url = https://github.com/berickson/bus-servo.git
