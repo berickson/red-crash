@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip install psutil platformio
 
 RUN python3 -m pip install numpy opencv-python
-RUN python3 -m pip install depthai==2.1.0.0.dev0+df16f1724b2969896fd39c086978da1da816a1c0 --extra-index-url https://artifacts.luxonis.com/artifactory/luxonis-python-snapshot-local
+RUN python3 -m pip install depthai==2.4.0.0 --extra-index-url https://artifacts.luxonis.com/artifactory/luxonis-python-snapshot-local
 
 RUN apt-get update && apt-get install -y \
   ros-noetic-rosserial-arduino \
@@ -38,7 +38,6 @@ RUN apt-get update && apt-get install -y \
 
 # Install special version of node because of conflict, see
 # https://github.com/ros/rosdistro/issues/27302
-#RUN apt-get install -y nodejs=8.10.0~dfsg-2ubuntu0.2 nodejs-dev=8.10.0~dfsg-2ubuntu0.2 npm
 RUN apt-get install -y nodejs npm
 
 #RUN apt-get install npm
@@ -96,7 +95,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-  RUN wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencis.sh | bash; return 0
+# disabling depthai-ros
+#  RUN wget -qO- https://raw.githubusercontent.com/luxonis/depthai-ros/noetic-devel/install_dependencis.sh | bash; return 0
 
 # # https://github.com/luxonis/depthai-docker/blob/master/Dockerfile-depthai#L11
 # RUN echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | tee /etc/udev/rules.d/80-movidius.rules
