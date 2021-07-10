@@ -5,7 +5,7 @@
     <arg name="baud" default="115200"/>
     <arg name="address" default="128"/>
     <arg name="max_speed" default="1.0"/>
-    <arg name="ticks_per_meter" default="1782.86"/>
+    <arg name="ticks_per_meter" default="1426.29"/>
     <arg name="left_motor_number" default="1"/>
     <arg name="base_width" default="0.413"/>
     <arg name="run_diag" default="true"/>

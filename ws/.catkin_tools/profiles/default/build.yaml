@@ -1,6 +1,6 @@
 authors: []
 blacklist:
-- oakd_cpp
+- scan_tools
 build_space: build
 catkin_make_args: []
 cmake_args: []

@@ -5,7 +5,12 @@
 
   <!-- see http://wiki.ros.org/amcl -->
   <node name="amcl" pkg="amcl" type="amcl">
-    <param name="initial_cov_aa" value = "100"/>
+  
+    <param name="initial_pose_x" value = "20.204"/>
+    <param name="initial_pose_y" value = "19.957"/>
+    <param name="initial_cov_xx" value = "0"/>
+    <param name="initial_cov_yy" value = "0"/>
+    <param name="initial_cov_aa" value = "0"/>
     <param name="transform_tolerance" value = "0.2"/>
   </node>
 

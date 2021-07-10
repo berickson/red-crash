@@ -9,6 +9,7 @@ DWAPlannerROS:
     occdist_scale: 0.51,
     path_distance_bias: 5.6,
     goal_distance_bias: 0.1,
+    xy_goal_tolerance: 0.05
 
   }
 
