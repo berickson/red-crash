@@ -1,8 +1,4 @@
 
-plugins:
-  - {name: static_layer, type: "costmap_2d::StaticLayer"}
-  - {name: obstacle_layer, type: "costmap_2d::ObstacleLayer"}
-  - {name: inflater_layer, type: "costmap_2d::InflationLayer"}
 
 obstacle_layer:
   observation_sources: rplidar
@@ -17,4 +13,4 @@ obstacle_layer:
     obstacle_range: 6.5, 
     combination_method: 1, # Changes the behaviour how the obstacle_layer handles incoming data from layers beyond it. Possible values are "Overwrite" (0), "Maximum" (1) and "Nothing" (99). "Overwrite" simply overwrites the data below, i.e. they are not used. "Maximum" is what you want most of the times. It takes the maximum of what is supplied in the obstacle_layer or the incoming data. "Nothing" doesn't change the incoming data at all. Note that this highly influences how the costmap behaves, depending on your setting of track_unkown_space.
     raytrace_range: 7}
-footprint: [[-0.297, 0.2225], [0.135, 0.2225], [0.135, -0.2225], [-0.297, -0.2225]]
+footprint: [[-0.2225, 0.2225], [0.2225, 0.2225], [0.22, -0.2225], [-0.2225, -0.2225]]

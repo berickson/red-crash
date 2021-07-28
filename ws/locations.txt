@@ -13,7 +13,7 @@ rostopic pub --once /move_base_simple/goal geometry_msgs/PoseStamped '{header: {
 # go
 rostopic pub --once /move_base_simple/goal geometry_msgs/PoseStamped '{header: {stamp: now, frame_id: "map"}, pose: {position: {x: 20.204, y: 19.957, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: -0.020294 , w: 0.97861}}}'
 #set
-rostopic pub /initialpose geometry_msgs/PoseWithCovarianceStamped '{ header: { frame_id: "/map" }, pose: {pose: {position: {x: 20.204 , y: 19.957 , z: 0} , orientation: {x: 0 , y: 0 , z: 0, w: 1}}}}' --once
+rostopic pub  --once /initialpose geometry_msgs/PoseWithCovarianceStamped '{ header: { frame_id: "/map" }, pose: {pose: {position: {x: 20.204 , y: 19.957 , z: 0} , orientation: {x: 0 , y: 0 , z: 0, w: 1}}}}'
 
 #### cancel nav
 rostopic pub --once move_base/cancel actionlib_msgs/GoalID '{}'

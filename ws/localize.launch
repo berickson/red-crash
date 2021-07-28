@@ -11,6 +11,9 @@
     <param name="initial_cov_xx" value = "0"/>
     <param name="initial_cov_yy" value = "0"/>
     <param name="initial_cov_aa" value = "0"/>
+    <param name="std_warn_level_x" value = "0.5"/>
+    <param name="std_warn_level_y" value = "0.5"/>
+    <param name="std_warn_level_yaw" value = "0.5"/>
     <param name="transform_tolerance" value = "0.2"/>
   </node>
 

@@ -1,0 +1,2 @@
+#! /bin/bash
+rostopic pub --once /servo$1_cmd bus_servo/ServoCommand "{angle: $2, max_vel: $3}"
