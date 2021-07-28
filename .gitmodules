@@ -25,3 +25,6 @@
 [submodule "ws/src/rf2o_laser_odometry"]
 	path = ws/src/rf2o_laser_odometry
 	url = https://github.com/tianb03/rf2o_laser_odometry.git
+[submodule "ws/src/jiggle"]
+	path = ws/src/jiggle
+	url = git@github.com:berickson/jiggle.git
