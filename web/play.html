@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>red-crash</title>
+<meta charset="utf-8" />
+
+<script type="text/javascript" src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+<script type="text/javascript" src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+<body>
+    <h1>red-crash</h1>
+    <h2>Commands</h2>
+<button onclick="cancel_navigation()">cancel navigation</button>
+<button onclick="go_to_piano()">piano</button>
+<button onclick="go_to_front_door()">front door</button>
+<button onclick="go_to_family_room()">family room</button>
+<button onclick="go_to_lab()">lab</button>
+
+
+<h2>Diagnostics</h1>
+ <div id="diagnostics"></div>
+
+<script type="text/javascript" type="text/javascript">
+  // Connecting to ROS
+  // -----------------
+
+  var ros = new ROSLIB.Ros({
+    url : 'ws://red-crash:9090'
+  });
+
+  ros.on('connection', function() {
+    console.log('Connected to websocket server.');
+  });
+
+  ros.on('error', function(error) {
+    console.log('Error connecting to websocket server: ', error);
+  });
+
+  ros.on('close', function() {
+    console.log('Connection to websocket server closed.');
+  });
+
+  move_base_simple_goal = new ROSLIB.Topic({
+    ros : ros,
+    name : '/move_base_simple/goal',
+    messageType : 'geometry_msgs/PoseStamped'
+  });
+
+  move_base_cancel = new ROSLIB.Topic({
+    ros : ros,
+    name : '/move_base/cancel',
+    messageType : 'actionlib_msgs/GoalID'
+  });
+
+
+  function cancel_navigation() {
+      move_base_cancel.publish({});
+  }
+
+  function go_to_pose(pose) {
+    var msg = new ROSLIB.Message({
+            header : {
+            stamp: get_stamp(),
+            frame_id: "map"
+            },
+            pose: pose
+        });
+
+        move_base_simple_goal.publish(msg);
+  }
+
+  function go_to_lab() {
+      go_to_pose({position: {x: 20.204, y: 19.957, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: -0.020294 , w: 0.97861}});
+  }
+
+  function go_to_family_room() {
+      go_to_pose( {position: {x: 16.945, y: 21.208, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.0059336 , w: 0.99998}} );
+  }
+
+
+    function get_stamp() {
+        var currentTime = new Date();
+        var secs = Math.floor(currentTime.getTime()/1000);
+        var nsecs = Math.round(1000000000*(currentTime.getTime()/1000-secs));
+        let stamp = { 
+            secs : secs,
+            nsecs : nsecs
+        };
+        return stamp;
+    }
+
+    function go_to_piano() {
+
+        var msg = new ROSLIB.Message({
+            header : {
+            stamp: get_stamp(),
+            frame_id: "map"
+            },
+            pose: {position: {x: 13.493, y: 24.894, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: 0.33795 , w: 0.94116}}
+        });
+
+        move_base_simple_goal.publish(msg);
+    }
+
+    function go_to_front_door() {
+
+        var front_door = new ROSLIB.Message({
+            header : {
+            stamp: get_stamp(),
+            frame_id: "map"
+            },
+            pose: {position: {x: 17.368, y: 28.596, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: -0.70177 , w: 0.71241}}
+        });
+
+        move_base_simple_goal.publish(front_door);
+
+    }
+
+
+  // Publishing a Topic
+  // ------------------
+/*
+  var cmdVel = new ROSLIB.Topic({
+    ros : ros,
+    name : '/cmd_vel',
+    messageType : 'geometry_msgs/Twist'
+  });
+
+  var twist = new ROSLIB.Message({
+    linear : {
+      x : 0.1,
+      y : 0.2,
+      z : 0.3
+    },
+    angular : {
+      x : -0.1,
+      y : -0.2,
+      z : -0.3
+    }
+  });
+  cmdVel.publish(twist);
+*/
+  // Subscribing to a Topic
+  // ----------------------
+
+  var listener = new ROSLIB.Topic({
+    ros : ros,
+    name : '/diagnostics_agg',
+    messageType : 'diagnostic_msgs/DiagnosticArray'
+  });
+
+  listener.subscribe(function(message) {
+    console.log('Received message on ' + listener.name + ': ' + message.status[0].name);
+    let s = "<ul>";
+    
+    s += "<li>"+ message.header.stamp.secs + "</li>"
+    for(let i=0;i<message.status.length; ++i) {
+        s+= "<li>";
+        let status = message.status[i];
+        s+=status.name + " - " + status.level + " : " + status.message;
+        s+="<ul>";
+        for(let j=0;j<status.values.length;++j) {
+            s+="<li>"
+            let v = status.values[j];
+            s+= v.key + " : " + v.value + "\n";
+            s+="</li>"
+        }
+        s+="</ul>";
+        s+="</li>";
+    }
+    s+="</ul>";
+    document.getElementById("diagnostics").innerHTML = s;
+    // listener.unsubscribe();
+  });
+
+  // Calling a service
+  // -----------------
+
+  var addTwoIntsClient = new ROSLIB.Service({
+    ros : ros,
+    name : '/add_two_ints',
+    serviceType : 'rospy_tutorials/AddTwoInts'
+  });
+
+  var request = new ROSLIB.ServiceRequest({
+    a : 1,
+    b : 2
+  });
+
+  addTwoIntsClient.callService(request, function(result) {
+    console.log('Result for service call on '
+      + addTwoIntsClient.name
+      + ': '
+      + result.sum);
+  });
+
+  // Getting and setting a param value
+  // ---------------------------------
+
+  ros.getParams(function(params) {
+    console.log(params);
+  });
+
+  var maxVelX = new ROSLIB.Param({
+    ros : ros,
+    name : 'max_vel_y'
+  });
+
+  maxVelX.set(0.8);
+  maxVelX.get(function(value) {
+    console.log('MAX VAL: ' + value);
+  });
+</script>
+</head>
+
+</body>
+</html>
