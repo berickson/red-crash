@@ -9,7 +9,7 @@
     <arg name="left_motor_number" default="1"/>
     <arg name="base_width" default="0.413"/>
     <arg name="run_diag" default="true"/>
-    <arg name="serial_timeout" default="1.0"/>
+    <arg name="serial_timeout" default="0.25"/>
     <arg name="base_link_frame" default = "base_link_roboclaw"/>
     
 

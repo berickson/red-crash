@@ -75,3 +75,25 @@ ATTRS{idVendor}=="054c", , ATTRS{idProduct}=="0268", SYMLINK+="ps3-joystick", MO
 
 ```
 then reboot.
+
+
+### connecting with Playstation controller
+From command line:
+```
+bluetoothctl
+scan on
+```
+
+Plug in controller using a micro-usb cable, you should see 
+
+```
+[NEW] Device 00:23:06:A6:66:2C Sony PLAYSTATION(R)3 Controller
+```
+
+then
+
+```
+pair 00:23:06:A6:66:2C
+scan off
+exit
+```

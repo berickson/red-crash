@@ -3,7 +3,6 @@
 docker run \
   -it \
   --privileged \
-  --rm \
   -w /root/ws \
   --env AUDIODEV=default:Device \
   --name car \
@@ -17,6 +16,7 @@ docker run \
   --device /dev/roboclaw \
   --device /dev/oak-d \
   --device /dev/lidar \
+  --restart unless-stopped \
   -e SHELL=/bin/bash \
   -v ~/red-crash/ws:/root/ws \
   brianerickson/ros /bin/bash -c "screen -c launch_${1:-all}.screenrc;exit"

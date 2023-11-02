@@ -1,0 +1,50 @@
+startup_message off
+
+screen -dmA -t core
+screen -dmA -t run
+screen -dmA -t roboclaw
+screen -dmA -t bridge
+screen -dmA -t speech
+screen -dmA -t joy
+
+
+select 0
+stuff "roscore\n"
+
+select 1
+stuff "source devel/setup.bash\n"
+
+select 2
+stuff "source devel/setup.bash\n roslaunch --wait roboclaw.launch\n"
+
+select 3
+stuff "source devel/setup.bash\n roslaunch --wait rosbridge.launch\n"
+
+select 4
+stuff "source devel/setup.bash\n roslaunch --wait speech.launch\n"
+
+select 5
+stuff "source devel/setup.bash\n roslaunch --wait joy.launch\n"
+
+
+#hardstatus alwayslastline "%H %w"
+hardstatus alwayslastline '%{= kG}[%{G}%H%{kG}] %{kw}%?%-w%?%{=b kR}(%{W}%n %t%?(%u)%?%{=b kR})%{= w}%?%+w%?%? %{g}]'
+
+
+####################### removed ####################################
+#select 4
+#stuff "source devel/setup.bash\n roslaunch --wait rplidar.launch\n"
+
+
+#select 4
+#stuff "source devel/setup.bash\n roslaunch --wait cam.launch\n"
+
+#select 5
+#stuff "source devel/setup.bash\n roslaunch --wait tf.launch\n"
+#select 8
+#stuff "source devel/setup.bash\n roslaunch --wait localize.launch\n"
+
+#select 9
+#stuff "source devel/setup.bash\n roslaunch --wait nav.launch\n"
+#select 11
+#stuff "source devel/setup.bash\n roslaunch --wait rf2o.launch\n"
