@@ -1,30 +1,30 @@
 [submodule "ws/src/roboclaw_ros"]
-	path = ws/src/roboclaw_ros
+	path = noetic/ws/src/roboclaw_ros
 	url = git@github.com:berickson/roboclaw_ros.git
 [submodule "ws/src/rplidar_ros"]
-	path = ws/src/rplidar_ros
+	path = noetic/ws/src/rplidar_ros
 	url = git@github.com:robopeak/rplidar_ros.git
 [submodule "ws/src/vision_opencv"]
 	path = ws/src/vision_opencv
 	url = git@github.com:berickson/vision_opencv.git
 [submodule "ws/src/speech_ros"]
-	path = ws/src/speech_ros
+	path = noetic/ws/src/speech_ros
 	url = git@github.com:berickson/speech_ros.git
 [submodule "ws/src/oakd"]
-	path = ws/src/oakd
+	path = noetic/ws/src/oakd
 	url = git@github.com:berickson/oakd.git
 [submodule "ws/src/depthai-ros"]
-	path = hide/depthai-ros
+	path = noetic/hide/depthai-ros
 	url = git@github.com:berickson/depthai-ros.git
 [submodule "ws/src/depthai-ros-examples"]
-	path = hide/depthai-ros-examples
+	path = noetic/hide/depthai-ros-examples
 	url = git@github.com:berickson/depthai-ros-examples.git
 [submodule "ws/src/bus-servo"]
-	path = ws/src/bus-servo
+	path = noetic/ws/src/bus-servo
 	url = https://github.com/berickson/bus-servo.git
 [submodule "ws/src/rf2o_laser_odometry"]
-	path = ws/src/rf2o_laser_odometry
+	path = noetic/ws/src/rf2o_laser_odometry
 	url = https://github.com/tianb03/rf2o_laser_odometry.git
 [submodule "ws/src/jiggle"]
-	path = ws/src/jiggle
+	path = noetic/ws/src/jiggle
 	url = git@github.com:berickson/jiggle.git
