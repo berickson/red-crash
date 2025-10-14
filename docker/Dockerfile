@@ -87,5 +87,10 @@ RUN mkdir -p /root/ros2_ws/src
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc
 RUN echo "if [ -f /root/ros2_ws/install/setup.bash ]; then source /root/ros2_ws/install/setup.bash; fi" >> /root/.bashrc
 
+# Install foxglove_bridge (temporary location for fast rebuild - TODO: move to ROS2 packages section)
+RUN apt-get update && apt-get install -y \
+  ros-jazzy-foxglove-bridge \
+  && rm -rf /var/lib/apt/lists/*
+
 # Set default working directory
 WORKDIR /root/ros2_ws
