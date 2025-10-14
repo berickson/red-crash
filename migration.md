@@ -271,8 +271,8 @@ popd
 
 [x] Reorganize project structure (Jazzy to root, Noetic to legacy folder)
 [x] Implement docker for use with ros2 jazzy in docker/
+[x] Launch file for joystick
 [ ] Manually test and verify (Brian)
-[ ] Launch file for joystick
 [ ] Test with Foxglove studio
 [ ] Implement motor control for teleop
 [ ] Manually test and verify (Brian)

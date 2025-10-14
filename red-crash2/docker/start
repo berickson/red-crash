@@ -20,4 +20,4 @@ docker run \
   -e SHELL=/bin/bash \
   -v ~/red-crash:/root/ros2_ws \
   -v ~/red-crash/noetic/ws:/root/ws \
-  brianerickson/ros2-jazzy /bin/bash -c "screen -c launch_${1:-all}.screenrc;exit"
+  brianerickson/ros2-jazzy /bin/bash

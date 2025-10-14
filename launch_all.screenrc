@@ -1,0 +1,13 @@
+startup_message off
+
+screen -dmA -t run
+screen -dmA -t joy
+
+select 0
+#stuff "source install/setup.bash\n"
+
+select 1
+stuff "ros2 launch launch/joy.launch.py\n"
+
+#hardstatus alwayslastline "%H %w"
+hardstatus alwayslastline '%{= kG}[%{G}%H%{kG}] %{kw}%?%-w%?%{=b kR}(%{W}%n %t%?(%u)%?%{=b kR})%{= w}%?%+w%?%? %{g}]'

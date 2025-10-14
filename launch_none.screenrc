@@ -1,0 +1,9 @@
+startup_message off
+
+screen -dmA -t run
+
+select 0
+stuff "source install/setup.bash\n"
+
+#hardstatus alwayslastline "%H %w"
+hardstatus alwayslastline '%{= kG}[%{G}%H%{kG}] %{kw}%?%-w%?%{=b kR}(%{W}%n %t%?(%u)%?%{=b kR})%{= w}%?%+w%?%? %{g}]'
