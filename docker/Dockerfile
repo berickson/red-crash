@@ -1,6 +1,8 @@
 #FROM osrf/ros:noetic-desktop-full
 FROM ros:noetic-perception
 # RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F42ED6FBAB17C654
+
 RUN apt-get update && apt-get install -y \
   git \
   screen \
@@ -48,7 +50,6 @@ RUN apt-get update && apt-get install -y \
     python3-rospkg-modules \
     ros-noetic-diagnostics \
     ros-noetic-joy \
-    ros-noetic-joystick-drivers \
     ros-noetic-teleop-twist-joy \
     sox \
     libsox-fmt-mp3 \
