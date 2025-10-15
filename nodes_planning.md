@@ -50,10 +50,16 @@ However, making `MotorDriver` inherit from `Node` was likely a mistake that crea
 ### Option A: Single Node with Composition (Recommended)
 **Approach**: Remove `MotorDriver` inheritance from `Node`, make it a component class
 - `MotorDriver` becomes a regular class (not a Node)
-- Single `rclcpp::Node` created in `motor_driver_node.cpp`
+- Single `rclcpp::Node` created in `motor_driver_node.cpp` with name **`roboclaw`**
 - `MotorDriver` receives node pointer and uses it for all ROS operations
 - All parameters declared on single node
 - Clean separation: Node handles ROS, MotorDriver handles robot logic
+
+**Node Name Decision**: Use `roboclaw` (not `roboclaw_node`)
+- Shorter and cleaner
+- Suffix is redundant - context makes it clear it's a node
+- Follows modern ROS2 naming trends
+- No ambiguity with other entities
 
 **Advantages**:
 - Clean architecture
@@ -65,9 +71,11 @@ However, making `MotorDriver` inherit from `Node` was likely a mistake that crea
 **Changes Required**:
 - Remove `: Node("motor_driver_node")` from MotorDriver constructor
 - Remove all `this->declare_parameter` calls from MotorDriver
-- Declare all parameters in motor_driver_node.cpp
+- Create node with name `roboclaw` in motor_driver_node.cpp (change from `ros2_roboclaw_driver_node`)
+- Declare all parameters in motor_driver_node.cpp on the single node
 - Pass node pointer to all MotorDriver methods that need it
 - Update publishers/subscribers to use passed node
+- Remove node name remapping from launch file (no longer needed)
 
 ### Option B: Keep Dual Nodes but Fix Communication (Not Recommended)
 **Approach**: Keep both nodes but properly coordinate them
@@ -81,20 +89,23 @@ However, making `MotorDriver` inherit from `Node` was likely a mistake that crea
 ## Implementation Plan
 
 ### Step 1: Fix Node Architecture (Critical - Do First)
-- [ ] Remove `Node` inheritance from `MotorDriver`
+- [ ] Change node name from `ros2_roboclaw_driver_node` to `roboclaw` in motor_driver_node.cpp
+- [ ] Remove `Node` inheritance from `MotorDriver` class
 - [ ] Move all parameter declarations to `motor_driver_node.cpp`
 - [ ] Update `MotorDriver` to use passed node pointer
 - [ ] Update all publishers/subscribers to use shared node
-- [ ] Test that single node appears in `ros2 node list`
+- [ ] Remove node name remapping from launch file (change `name='roboclaw_node'` line)
+- [ ] Test that single node appears as `roboclaw` in `ros2 node list`
 - [ ] Test that all parameters appear on single node
 
 ## Success Criteria
 
-- [ ] Only ONE node visible in `ros2 node list`
+- [ ] Only ONE node visible in `ros2 node list` with name `/roboclaw`
 - [ ] No warnings about duplicate node names
-- [ ] All parameters visible on single node
+- [ ] All parameters visible on single node `/roboclaw`
 - [ ] Foxglove Bridge works without errors
 - [ ] All ROS operations work correctly with single node
+- [ ] Launch file simplified (no node name remapping needed)
 
 ## Future Considerations for Multiple Controllers
 
@@ -108,10 +119,13 @@ If support for multiple RoboClaw controllers is needed in the future:
 ## Migration Notes
 
 ### For Users
-- After update, all parameters will be on node named `roboclaw_node`
+- After update, node will be named `roboclaw` (previously appeared as `roboclaw_node` due to launch file remapping)
+- All parameters will be on single node named `roboclaw`
 - Old launch files will continue to work (same parameter names)
-- Internal architecture change only
+- Node name is cleaner but functionally equivalent
 
 ### Breaking Changes
-- None expected - parameter names and defaults unchanged
-- Internal architecture change only
+- Node name changes from `/roboclaw_node` to `/roboclaw`
+  - Any code/scripts referencing the node by name will need updating
+  - Parameter names remain unchanged
+- Internal architecture change removes duplicate node issue
