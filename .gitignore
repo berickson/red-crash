@@ -3,3 +3,5 @@ build/
 install/
 devel/
 __pycache__
+secrets.env
+*.key

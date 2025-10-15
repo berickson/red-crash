@@ -5,9 +5,16 @@ from rclpy.node import Node
 import time
 import re
 import random
+import os
 
 from std_msgs.msg import String
 from diagnostic_msgs.msg import DiagnosticArray
+
+try:
+    from openai import OpenAI
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
 
 
 class CommandInterpreterNode(Node):
@@ -34,12 +41,44 @@ class CommandInterpreterNode(Node):
         # Store latest diagnostics
         self.latest_diagnostics = dict()
         
+        # Initialize OpenAI client if available
+        self.openai_client = None
+        if OPENAI_AVAILABLE:
+            api_key = os.environ.get('OPENAI_API_KEY')
+            if api_key:
+                self.openai_client = OpenAI(api_key=api_key)
+                self.get_logger().info("OpenAI client initialized")
+            else:
+                self.get_logger().warn("OPENAI_API_KEY not found in environment")
+        else:
+            self.get_logger().info("OpenAI not available - install with: pip install openai")
+        
         self.get_logger().info("Command interpreter started")
     
     def say(self, text):
         """Send text to speech node"""
         self.get_logger().info(f"reply: {text}")
         self.say_publisher.publish(String(data=text))
+    
+    def ask_openai(self, question):
+        """Ask OpenAI for a response"""
+        if not self.openai_client:
+            return None
+        
+        try:
+            response = self.openai_client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are Red Crash, a friendly autonomous robot. Keep responses brief and conversational (1-2 sentences). You have a playful personality."},
+                    {"role": "user", "content": question}
+                ],
+                max_tokens=100,
+                temperature=0.7
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            self.get_logger().error(f"OpenAI API error: {e}")
+            return None
     
     def text_to_float(self, text):
         """Convert text representation of numbers to float"""
@@ -102,11 +141,11 @@ class CommandInterpreterNode(Node):
         # Remove wake word to find request
         request = utterance[len(wake_word):].lstrip()
         
-        # Process different command patterns
-        p = re.compile('.*your name.*', re.IGNORECASE)
-        if p.match(request) is not None:
-            self.say("my name is red, crash")
-            return
+        # # Process different command patterns
+        # p = re.compile('.*your name.*', re.IGNORECASE)
+        # if p.match(request) is not None:
+        #     self.say("my name is red, crash")
+        #     return
         
         p = re.compile('.*(?:old|born|age).*', re.IGNORECASE)
         if p.match(request) is not None:
@@ -145,6 +184,15 @@ class CommandInterpreterNode(Node):
             self.say("I'm ok")
             return
         
+        # If no pattern matched, try OpenAI as fallback
+        if self.openai_client:
+            self.get_logger().info(f"Asking OpenAI: {request}")
+            ai_response = self.ask_openai(request)
+            if ai_response:
+                self.say(ai_response)
+                return
+        
+        # Final fallback
         self.say(f"Sorry, I don't know how to respond to {request}")
 
 

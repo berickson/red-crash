@@ -63,7 +63,8 @@ RUN python3 -m pip install --break-system-packages \
   pyttsx3 \
   gtts \
   depthai \
-  depthai-pipeline-graph
+  depthai-pipeline-graph \
+  openai
 
 # Install DepthAI for ROS2 (official driver)
 RUN apt-get update && apt-get install -y \
@@ -86,6 +87,7 @@ RUN mkdir -p /root/ros2_ws/src
 # Source ROS2 setup in bashrc
 RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc
 RUN echo "if [ -f /root/ros2_ws/install/setup.bash ]; then source /root/ros2_ws/install/setup.bash; fi" >> /root/.bashrc
+RUN echo "if [ -f /root/ros2_ws/secrets.env ]; then source /root/ros2_ws/secrets.env; fi" >> /root/.bashrc
 
 # Install foxglove_bridge and ament packages for building (temporary location for fast rebuild - TODO: move to ROS2 packages section)
 RUN apt-get update && apt-get install -y \

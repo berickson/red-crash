@@ -21,12 +21,13 @@ Speech recognition and text-to-speech package for ROS2.
 - gtts - Google Text-to-Speech
 - pyaudio - Microphone input
 - sox - Audio playback (system package)
+- openai - OpenAI API (optional, for AI fallback responses)
 
 ## Installation
 
 Install Python dependencies in the docker container:
 ```bash
-docker exec car bash -c "pip3 install speech_recognition gtts pyaudio"
+docker exec car bash -c "pip3 install speech_recognition gtts pyaudio openai"
 ```
 
 Install sox for audio playback (if not already installed):
@@ -61,6 +62,15 @@ ros2 run speech_ros command_interpreter
 - `speaker_volume_percent` (default: 35.0) - Speaker volume (0-100)
 - `use_microphone` (default: true) - Enable microphone listening
 
+## Environment Variables
+
+- `OPENAI_API_KEY` - OpenAI API key for AI fallback responses (optional)
+
+Set in docker container:
+```bash
+docker exec car bash -c "echo 'export OPENAI_API_KEY=your-key-here' >> ~/.bashrc"
+```
+
 ## Voice Commands
 
 Wake words: "hey robot", "he robot", "arabic", "hear about", "hero but", etc.
@@ -71,6 +81,7 @@ Supported commands:
 - "will you marry me" - Humorous responses
 - "set volume to [number]" - Adjust speaker volume
 - "how are you" / "status" - Status check
+- **Any other question** - Falls back to OpenAI for natural conversation (if configured)
 
 ## Notes
 
