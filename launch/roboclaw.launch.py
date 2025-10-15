@@ -49,8 +49,8 @@ def generate_launch_description():
                 'm2_qpps': 2437,
                 
                 # Current limits
-                'm1_max_current': 2.0,
-                'm2_max_current': 2.0,
+                'm1_max_current': 10.0,
+                'm2_max_current': 10.0,
                 
                 # Velocity limits
                 'max_angular_velocity': 2.0,
