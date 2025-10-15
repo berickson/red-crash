@@ -2,6 +2,7 @@ startup_message off
 
 screen -dmA -t run
 screen -dmA -t joy
+screen -dmA -t roboclaw
 screen -dmA -t foxglove
 
 select 0
@@ -11,6 +12,9 @@ select 1
 stuff "ros2 launch launch/joy.launch.py\n"
 
 select 2
+stuff "ros2 launch launch/roboclaw.launch.py\n"
+
+select 3
 stuff "ros2 launch foxglove_bridge foxglove_bridge_launch.xml\n"
 
 #hardstatus alwayslastline "%H %w"

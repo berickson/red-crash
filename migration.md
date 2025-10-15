@@ -180,10 +180,6 @@ location: noetic/ws/src/roboclaw_ros
    - `ticks_per_meter: 4342.2` → `quad_pulses_per_meter: 4342`
    - `base_width: 0.315` → `wheel_separation: 0.315`
 
-3. **Configure RoboClaw PID settings** using Motion Studio (Windows required):
-   - Calibrate velocity PID for both motors (M1/M2)
-   - Note QPPS (max speed) values for configuration
-   - Export PID settings to driver configuration YAML
 
 4. **Update dependent nodes**:
    - Same topic interfaces (`/cmd_vel`, `/odom`) - minimal changes needed
@@ -272,7 +268,7 @@ popd
 [x] Reorganize project structure (Jazzy to root, Noetic to legacy folder)
 [x] Implement docker for use with ros2 jazzy in docker/
 [x] Launch file for joystick
-[ ] Manually test and verify (Brian)
-[ ] Test with Foxglove studio
-[ ] Implement motor control for teleop
-[ ] Manually test and verify (Brian)
+[x] Manually test and verify (Brian)
+[x] Test with Foxglove studio
+[x] Implement motor control for teleop (roboclaw)
+[ ] Manually test and verify roboclaw + joystick integration (Brian)

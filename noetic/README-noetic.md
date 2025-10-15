@@ -68,10 +68,10 @@ Then browse to http://localhost:8080/?rosbridge-websocket-url=ws://red-crash:909
 ### udev rules
 To make "nice" and more importantly permanent device names, put following in /etc/udev/rules.d/89-local.rules.  This will cause your devices to be listed under /dev/roboclaw and /dev/oak-d, etc.
 ```
-ATTRS{idVendor}=="03eb", , ATTRS{idProduct}=="2404", SYMLINK+="roboclaw"
-ATTRS{idVendor}=="03e7", , ATTRS{idProduct}=="2485", SYMLINK+="oak-d"
-ATTRS{idVendor}=="10c4", , ATTRS{idProduct}=="ea60", SYMLINK+="lidar"
-ATTRS{idVendor}=="054c", , ATTRS{idProduct}=="0268", SYMLINK+="ps3-joystick", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="03eb", ATTRS{idProduct}=="2404", SYMLINK+="roboclaw"
+SUBSYSTEM=="video4linux", ATTRS{idVendor}=="03e7", ATTRS{idProduct}=="2485", SYMLINK+="oak-d"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", SYMLINK+="lidar"
+SUBSYSTEM=="input", ATTRS{idVendor}=="054c", ATTRS{idProduct}=="0268", SYMLINK+="ps3-joystick", MODE="0666"
 
 ```
 then reboot.

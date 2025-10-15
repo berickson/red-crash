@@ -6,35 +6,35 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        # Joy Node - auto-detects joystick devices
+        # Joy Node - matches original ROS1 parameters exactly
         Node(
             package='joy',
             executable='joy_node',
             name='ps3_joy',
             output='screen',
             parameters=[{
-                'deadzone': 0.012,
-                'autorepeat_rate': 5.0,
+                'deadzone': 0.012,  # Match original deadzone
+                'autorepeat_rate': 5.0,  # Match original autorepeat_rate
             }]
         ),
-
-        # Teleop Twist Joy Node
+        
+        # Teleop Twist Joy Node - fixed axis mappings
         Node(
             package='teleop_twist_joy',
             executable='teleop_node',
             name='teleop_node',
             output='screen',
             parameters=[{
+                'axis_angular.yaw': 0,  # Left stick horizontal
+                'axis_linear.x': 1,     # Left stick vertical
                 'enable_button': 0,  # X button (button 0)
-                'scale_linear': 0.2,
-                'scale_angular': 0.5,
+                'scale_linear.x': 0.2,
+                'scale_angular.yaw': 0.05,
                 'enable_turbo_button': 1,  # Circle button (button 1)
-                'scale_linear_turbo': 0.5,
-                'scale_angular_turbo': 1.57,
+                'scale_linear_turbo.x': 0.5,
+                'scale_angular_turbo.yaw': 0.1,
             }]
-        ),
-
-        # Soundboard Node (will need to be migrated separately)
+        ),        # Soundboard Node (will need to be migrated separately)
         # Node(
         #     package='joy_soundboard_ros',
         #     executable='joy_soundboard.py',
