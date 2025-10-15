@@ -42,18 +42,21 @@ For usage and container management, see the main README.md.
 - `ros-jazzy-depthai-descriptions` - Camera descriptions
 - `ros-jazzy-foxglove-bridge` - Foxglove visualization
 
-#### Development Tools
+### Development Tools
 - `python3-colcon-common-extensions` - ROS2 build tool
 - `git`, `screen`, `htop`, `nano` - Development utilities
 
-#### Python Libraries
-- `SpeechRecognition`, `gtts`, `pyttsx3` - Speech capabilities
+### Python Libraries
+- `SpeechRecognition`, `gtts`, `PyAudio` - Speech capabilities
 - `opencv-python`, `numpy` - Computer vision
 - `psutil` - System monitoring
+- `sox` - Audio playback (play command)
+
+## Container Configuration
 
 ### Volume Mounts
-- `~/red-crash/red-crash2:/root/ros2_ws` - ROS2 workspace
-- `~/red-crash/ws:/root/ws` - Legacy ROS1 workspace (for transition)
+- `~/red-crash:/root/ros2_ws` - ROS2 workspace (main)
+- `~/red-crash/noetic/ws:/root/ws` - Legacy ROS1 workspace
 
 ### Device Access
 - `/dev/ps3-joystick` - PlayStation controller
@@ -62,72 +65,21 @@ For usage and container management, see the main README.md.
 - `/dev/oak-d` - OAK-D stereo camera
 - `/dev/lidar` - LiDAR sensor
 
-## Container Features
-
-### Workspace Setup
+### Container Features
 - **Working directory**: `/root/ros2_ws`
-- **ROS2 sourcing**: Automatic setup in `.bashrc`
-- **Build system**: colcon (ROS2 standard)
+- **Container name**: `car`
+- **Restart policy**: `unless-stopped`
+- **Network mode**: Host networking for rosbridge/web interfaces
+- **Privileges**: Runs with `--privileged` for device access
+- **Audio**: Added to audio group with ALSA support
 
-### Network Configuration
-- **Host networking**: Direct access to host network interfaces
-- **Port access**: Full access for rosbridge and web interfaces
+### Screen Integration
+The container uses GNU Screen to launch multiple ROS2 nodes in separate tabs. Screen configuration files (`launch_*.screenrc`) define which nodes to start automatically.
 
-### Audio Support
-- **ALSA**: Audio system integration
-- **Group membership**: Added to audio group
-- **Device access**: `/dev` mounted for audio hardware
+## Migration Support
 
-## Usage Notes
+This Docker environment supports parallel ROS1/ROS2 operation during migration:
+- ROS2: `/root/ros2_ws` (primary workspace)
+- ROS1: `/root/ws` (legacy, for reference)
 
-### Building ROS2 Packages
-```bash
-# Inside container
-cd /root/ros2_ws
-colcon build
-source install/setup.bash
-```
-
-
-### Screen usage
-The container uses GNU Screen to launch multiple ROS2 nodes in separate tabs. Configuration files like `launch_all.screenrc` automatically start all nodes (joy, roboclaw, foxglove, soundboard, speech) in individual screens that you can switch between with Ctrl-A followed by the screen number.
-
-### Parallel ROS1/ROS2 Operation
-During migration, both ROS1 and ROS2 workspaces are accessible:
-- ROS2: `/root/ros2_ws` (primary)
-- ROS1: `/root/ws` (legacy, read-only access)
-
-## Migration Status
-
-This project is currently being ported from Noetic to Jazzy, See `migration.md`.
-
-
-## Container Management
-
-### Container Name
-- **ROS2**: `car-ros2` (this container)
-- **ROS1**: `car` (existing container)
-
-Both containers can run simultaneously during migration.
-
-### Restart Policy
-- **unless-stopped**: Container restarts automatically unless explicitly stopped
-
-### Troubleshooting
-
-#### Device Access Issues
-Ensure device symlinks exist on host:
-```bash
-ls -la /dev/oak-d /dev/roboclaw /dev/lidar
-```
-
-#### Permission Issues
-Run container with `--privileged` flag (already configured).
-
-#### Audio Issues
-Check audio group membership and ALSA configuration:
-```bash
-# Inside container
-groups
-aplay -l
-```
+Both workspaces are accessible for gradual migration. See `migration.md` for status.
