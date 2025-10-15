@@ -91,6 +91,9 @@ source install/setup.bash
 ros2 launch teleop_twist_joy teleop-launch.py
 ```
 
+### Screen usage
+The container uses GNU Screen to launch multiple ROS2 nodes in separate tabs. Configuration files like `launch_all.screenrc` automatically start all nodes (joy, roboclaw, foxglove, soundboard, speech) in individual screens that you can switch between with Ctrl-A followed by the screen number.
+
 ### Parallel ROS1/ROS2 Operation
 During migration, both ROS1 and ROS2 workspaces are accessible:
 - ROS2: `/root/ros2_ws` (primary)

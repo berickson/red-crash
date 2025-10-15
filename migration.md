@@ -18,7 +18,7 @@ location: noetic/ws/src/speech_ros
 **Main Files:**
 - `speech.py` - Speech recognition and text-to-speech node
 - `command_interpreter.py` - Voice command processing node
-- `say.py` - Test/utility script
+- `say.py` - Test/utility script (likely not needed in ROS2 version)
 
 **ROS Dependencies (All verified for ROS2 Jazzy):**
 - `rclpy` - ROS2 Python client library (fully supported)
@@ -30,23 +30,76 @@ location: noetic/ws/src/speech_ros
 - `gtts` (Google Text-to-Speech) - TTS generation
 - `pyaudio` - Microphone input
 
-**Migration Plan:**
-1. Convert package structure from catkin to ament_python
-2. Update Python code: replace `rospy` with `rclpy`
-   - `rospy.init_node()` → `rclpy.init()`
-   - `rospy.Publisher()` → `node.create_publisher()`
-   - `rospy.Subscriber()` → `node.create_subscription()`
-   - `rospy.spin()` → `rclpy.spin(node)`
-   - `rospy.loginfo()` → `node.get_logger().info()`
-   - `rospy.get_param()` → `node.declare_parameter()` / `node.get_parameter()`
-3. Update CMakeLists.txt → Remove (not needed for ament_python)
-4. Update package.xml format 2 → format 3, change build type to ament_python
-5. Create setup.py with entry points for nodes
-6. Create requirements.txt or add Python dependencies to package.xml
-7. Update launch files from .launch (XML) to Python launch files
+**Detailed Migration Plan:**
+
+1. **Create Package Structure**
+   - Create `src/speech_ros/` directory
+   - Create `src/speech_ros/speech_ros/` subdirectory for Python modules
+   - Create `src/speech_ros/speech_ros/__init__.py`
+   - Create `src/speech_ros/resource/speech_ros` (empty marker file)
+   - Create `src/speech_ros/setup.cfg` (standard boilerplate)
+   - Copy `secrets/` folder (maintain .gitignore for secrets.json)
+
+2. **Create package.xml (format 3)**
+   - Set build type to `ament_python`
+   - Add buildtool_depend: `ament_python`
+   - Add dependencies: `rclpy`, `std_msgs`, `diagnostic_msgs`
+   - Add test dependencies (ament_copyright, ament_flake8, ament_pep257, python3-pytest)
+
+3. **Create setup.py**
+   - Define entry points for two nodes:
+     - `speech = speech_ros.speech:main`
+     - `command_interpreter = speech_ros.command_interpreter:main`
+   - Include secrets folder in data_files (similar to sounds folder pattern)
+
+4. **Migrate speech.py**
+   - Convert to class-based node: `class SpeechNode(Node)`
+   - Replace `rospy.init_node()` with node initialization in `__init__()`
+   - Replace `rospy.Publisher()` with `self.create_publisher()`
+   - Replace `rospy.Subscriber()` with `self.create_subscription()`
+   - Replace `rospy.loginfo()` with `self.get_logger().info()`
+   - Replace `rospy.get_param()` with `self.declare_parameter()` / `self.get_parameter()`
+   - Replace `rospy.Time.now()` with `self.get_clock().now()`
+   - Replace `rospy.Duration()` with `rclpy.duration.Duration()`
+   - Replace `rospy.spin()` with `rclpy.spin(node)` in main()
+   - Add proper main() function with rclpy.init/shutdown
+
+5. **Migrate command_interpreter.py**
+   - Convert to class-based node: `class CommandInterpreterNode(Node)`
+   - Apply all rospy → rclpy conversions as above
+   - Update diagnostics callback to handle ROS2 message structure
+   - Update regex patterns and response logic (no changes needed)
+   - Add proper main() function
+
+6. **Create Launch File**
+   - Create `launch/speech.launch.py`
+   - Launch both `speech` and `command_interpreter` nodes
+   - Declare parameter for speaker_volume_percent (default 35)
+
+7. **Update launch_all.screenrc**
+   - Add new screen for speech module
+   - Add command: `ros2 launch launch/speech.launch.py`
+
+8. **Build and Test**
+   - Run `colcon build --symlink-install --packages-select speech_ros`
+   - Test speech recognition (utterances published to /speech/utterances)
+   - Test TTS (publish to /speech/say)
+   - Test command interpreter wake word detection
+   - Test diagnostics monitoring
+
+9. **Documentation**
+   - Update README if needed
+   - Document any parameter changes
+   - Note: say.py test script uses pyttsx3 instead of gtts - may not be needed
 
 **Estimated Effort:** 2-4 hours
 **Risk Level:** Low - No custom messages, no C++ code, standard dependencies
+
+**Notes:**
+- The package uses Google Speech Recognition API (no auth required for basic usage)
+- secrets/ folder is for optional Google OAuth credentials
+- Audio output uses `play` command (sox) - ensure installed in docker
+- Background listening uses threading - should work similarly in ROS2
 
 ## oakd
 
@@ -127,60 +180,9 @@ done, replaced with a customized ros2_roboclaw_driver
 done, moved docker and screen system to ros2
 
 ## [x] joy_soundboard_ros
+done
 
-**Location:** `noetic/ws/src/joy_soundboard_ros` → `src/joy_soundboard_ros`
-
-**Status:** ✅ MIGRATED - LOW complexity
-
-**Package Type:** Pure Python (ament_python)
-
-**Main Files:**
-- `joy_soundboard.py` - Main node that plays sounds on joystick button press
-- `sounds/` - Directory containing numbered sound files (e.g., `0-sound.mp3`, `1-sound.wav`)
-
-**ROS Dependencies (All verified for ROS2 Jazzy):**
-- `rclpy` - ROS2 Python client library (fully supported)
-- `sensor_msgs` - Joy message (v4.9.0, Quality Level 1)
-
-**External Dependencies:**
-- `sox` - Command-line audio player (system package, no changes needed)
-- Standard Python: `os`, `glob`
-
-**Migration Plan:**
-1. Create new package structure in `src/joy_soundboard_ros/`
-2. Copy `sounds/` directory to new location
-3. Convert Python code: replace `rospy` with `rclpy`
-   - `rospy.init_node()` → `rclpy.init()` + `Node` class
-   - `rospy.Subscriber()` → `self.create_subscription()`
-   - `rospy.spin()` → `rclpy.spin(node)`
-   - `RosPack().get_path()` → `get_package_share_directory()` (from `ament_index_python`)
-4. Update `package.xml`: format 2 → format 3, add `ament_python` build type
-5. Remove `CMakeLists.txt` (not needed for Python)
-6. Create `setup.py` with entry point for `joy_soundboard` node
-7. Create `resource/joy_soundboard_ros` marker file (ament requirement)
-8. Add entry to `launch_all.screenrc` for the soundboard node
-9. Test button press → sound playback functionality
-
-**Estimated Effort:** 1-2 hours (✅ Completed in ~1 hour)
-**Risk Level:** Low - Simple Python node, no custom messages, minimal ROS interaction
-
-**Migration Completed:** October 15, 2025
-
-**Build Command:**
-```bash
-docker exec car bash -c "cd /root/ros2_ws && colcon build --packages-select joy_soundboard_ros --symlink-install --paths src/joy_soundboard_ros"
-```
-
-**Run Command:**
-```bash
-docker exec car bash -c "source /opt/ros/jazzy/setup.bash && source /root/ros2_ws/install/setup.bash && ros2 run joy_soundboard_ros joy_soundboard"
-```
-
-**Notes:**
-- Sound files can be copied as-is (format-agnostic)
-- `sox` command-line tool works identically in ROS2 environment
-- Button timing logic (1-second message age check) should be preserved
-start time 6:51 pm, estimate 
+## speech_ros
 
 # Migration Tracker
 
@@ -192,5 +194,6 @@ start time 6:51 pm, estimate
 [x] Implement motor control for teleop (roboclaw)
 [x] Manually test and verify roboclaw + joystick integration (Brian)
 [x] Get soundboard working
-[ ] Get speech module working
+[x] Migrate speech_ros package to ROS2
+[ ] Test speech_ros (install Python dependencies, test speech recognition and TTS)
 [ ] Get depthai-ros working

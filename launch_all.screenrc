@@ -5,6 +5,7 @@ screen -dmA -t joy
 screen -dmA -t roboclaw
 screen -dmA -t foxglove
 screen -dmA -t soundboard
+screen -dmA -t speech
 
 select 0
 #stuff "source install/setup.bash\n"
@@ -20,6 +21,9 @@ stuff "ros2 launch foxglove_bridge foxglove_bridge_launch.xml\n"
 
 select 4
 stuff "ros2 run joy_soundboard_ros joy_soundboard\n"
+
+select 5
+stuff "ros2 launch launch/speech.launch.py\n"
 
 #hardstatus alwayslastline "%H %w"
 hardstatus alwayslastline '%{= kG}[%{G}%H%{kG}] %{kw}%?%-w%?%{=b kR}(%{W}%n %t%?(%u)%?%{=b kR})%{= w}%?%+w%?%? %{g}]'
