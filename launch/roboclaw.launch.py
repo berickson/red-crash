@@ -28,7 +28,6 @@ def generate_launch_description():
         Node(
             package='ros2_roboclaw_driver',
             executable='ros2_roboclaw_driver_node',
-            name='roboclaw_node',
             output='screen',
             parameters=[{
                 # Device connection parameters
