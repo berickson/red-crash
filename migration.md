@@ -120,148 +120,67 @@ location: noetic/ws/src/oakd
 - Official driver supports both DepthAI v2 and newer v3 API
 - Migration is opportunity to leverage latest camera features
 
-## roboclaw_ros
+## [x] roboclaw_ros
+done, replaced with a customized ros2_roboclaw_driver
 
-location: noetic/ws/src/roboclaw_ros
+## [x] docker
+done, moved docker and screen system to ros2
 
-**Status:** Replace with modern ROS2 implementation - MEDIUM complexity
+## [x] joy_soundboard_ros
 
-**Package Type:** Custom Python driver using roboclaw_driver library
+**Location:** `noetic/ws/src/joy_soundboard_ros` → `src/joy_soundboard_ros`
 
-**Main Files:**
-- `roboclaw_node.py` - Main motor controller node with odometry
-- `roboclaw_driver.py` - Low-level serial communication driver (1213 lines)
-- `roboclaw.launch` - Launch file with motor/robot parameters
+**Status:** ✅ MIGRATED - LOW complexity
 
-**Current Dependencies (ROS1):**
-- `rospy`, `roscpp`, `std_msgs`, `geometry_msgs`, `nav_msgs`, `tf` 
-- `diagnostic_msgs`, `diagnostic_updater` - Robot diagnostics
-- Serial communication over USB/UART (/dev/ttyACM0)
-
-**Functionality:**
-- Differential drive motor control via `/cmd_vel` subscription
-- Wheel encoder-based odometry publishing on `/odom`
-- TF transforms between `odom` and `base_link` frames
-- Motor current monitoring and battery voltage reporting
-- Diagnostic status reporting and safety timeouts
-
-**Migration Strategy: REPLACE with Modern ROS2 Implementation**
-
-**Recommended Approach:**
-1. **Primary Option**: Use `ros2_roboclaw_driver` by wimblerobotics
-   - Mature C++ implementation with active maintenance
-   - Repository: `https://github.com/wimblerobotics/ros2_roboclaw_driver`
-   - Full feature parity with current Python implementation
-
-2. **Alternative**: Use `roboclaw_hardware_interface` by dumbotics
-   - Integrates with ROS2 Control framework
-   - Repository: `https://github.com/dumbotics/roboclaw_hardware_interface`
-   - Better for complex robot configurations
-
-**Recommended Package Features:**
-- **Motor Control**: Velocity commands, acceleration limiting, safety timeouts
-- **Odometry**: Encoder-based position estimation with configurable parameters
-- **Diagnostics**: Battery voltage, motor current, temperature monitoring
-- **Configuration**: YAML-based parameter setup for robot dimensions
-- **Safety**: Automatic motor stop on communication timeout
-
-**Migration Steps:**
-1. **Install ROS2 roboclaw driver**:
-   ```bash
-   cd ~/ros2_ws/src
-   git clone https://github.com/wimblerobotics/ros2_roboclaw_driver.git
-   ```
-
-2. **Port configuration parameters** from current launch file:
-   - `dev: /dev/ttyACM0` → `device_name: "/dev/ttyACM0"`
-   - `baud: 115200` → `baud_rate: 115200`  
-   - `address: 128` → `device_port: 128`
-   - `max_speed: 2.0` → `max_linear_velocity: 2.0`
-   - `ticks_per_meter: 4342.2` → `quad_pulses_per_meter: 4342`
-   - `base_width: 0.315` → `wheel_separation: 0.315`
-
-
-4. **Update dependent nodes**:
-   - Same topic interfaces (`/cmd_vel`, `/odom`) - minimal changes needed
-   - Diagnostic topics may have different message formats
-
-**Benefits of Modern Implementation:**
-- **Better Performance**: C++ implementation vs Python
-- **Modern ROS2 Patterns**: Uses rclcpp, proper lifecycle management
-- **Enhanced Safety**: More robust error handling and recovery
-- **Active Development**: Regular updates and community support
-- **Better Documentation**: Comprehensive setup guides
-
-**Estimated Effort:** 6-10 hours (including PID calibration and testing)
-**Risk Level:** Medium - Requires Windows for PID tuning, potential parameter differences
-
-**Prerequisites:**
-- Windows computer with IonMotion/Motion Studio for PID calibration
-- RoboClaw firmware configured for packet serial mode
-- Motor encoder direction and QPPS values determined
-
-## docker
-
-location: noetic/docker/ (legacy), docker/ (current ROS2)
-
-**Status:** Update for ROS2 when needed - LOW complexity
-
-**Package Type:** Docker containerization for ROS environment
+**Package Type:** Pure Python (ament_python)
 
 **Main Files:**
-- `Dockerfile` - Container definition based on ROS Noetic
-- `build` - Build script that references back to docker directory
-- `start` - Runtime script that mounts workspace from `~/red-crash/ws`
+- `joy_soundboard.py` - Main node that plays sounds on joystick button press
+- `sounds/` - Directory containing numbered sound files (e.g., `0-sound.mp3`, `1-sound.wav`)
 
-**Current Setup:**
-- Base image: `ros:noetic-perception` 
-- Workspace mounting: `-v ~/red-crash/ws:/root/ws`
-- Device access: Joystick, RoboClaw, OAK-D, LiDAR via `/dev/*`
-- Screen-based launch system with configurable launch files
+**ROS Dependencies (All verified for ROS2 Jazzy):**
+- `rclpy` - ROS2 Python client library (fully supported)
+- `sensor_msgs` - Joy message (v4.9.0, Quality Level 1)
 
-**Migration Strategy: UPDATE WHEN NEEDED**
+**External Dependencies:**
+- `sox` - Command-line audio player (system package, no changes needed)
+- Standard Python: `os`, `glob`
 
-**Approach:**
-- **Keep ROS1 container operational** during migration period
-- **Create ROS2 container only when first ROS2 package is ready**
-- **Maintain parallel operation** until migration is complete
+**Migration Plan:**
+1. Create new package structure in `src/joy_soundboard_ros/`
+2. Copy `sounds/` directory to new location
+3. Convert Python code: replace `rospy` with `rclpy`
+   - `rospy.init_node()` → `rclpy.init()` + `Node` class
+   - `rospy.Subscriber()` → `self.create_subscription()`
+   - `rospy.spin()` → `rclpy.spin(node)`
+   - `RosPack().get_path()` → `get_package_share_directory()` (from `ament_index_python`)
+4. Update `package.xml`: format 2 → format 3, add `ament_python` build type
+5. Remove `CMakeLists.txt` (not needed for Python)
+6. Create `setup.py` with entry point for `joy_soundboard` node
+7. Create `resource/joy_soundboard_ros` marker file (ament requirement)
+8. Add entry to `launch_all.screenrc` for the soundboard node
+9. Test button press → sound playback functionality
 
-**Future ROS2 Container Plan:**
-1. **Base Image**: Change to `ros:jazzy-perception`
-2. **Workspace Structure**: 
-   - Mount: `-v ~/red-crash/ros2:/root/ros2_ws` 
-   - Keep existing: `-v ~/red-crash/ws:/root/ws` for ROS1 compatibility
-3. **Package Dependencies**: Replace ROS1 packages with ROS2 equivalents:
-   - `ros-noetic-*` → `ros-jazzy-*`
-   - `ros-noetic-rosbridge-suite` → `ros-jazzy-rosbridge-suite`
-   - `ros-noetic-hector-*` → `ros-jazzy-hector-slam`
-   - Navigation: `ros-jazzy-navigation2` instead of `ros-noetic-move-base`
-4. **Launch System**: Update for ROS2 launch files when needed
+**Estimated Effort:** 1-2 hours (✅ Completed in ~1 hour)
+**Risk Level:** Low - Simple Python node, no custom messages, minimal ROS interaction
 
-**Build Script Pattern (maintain reference-back approach):**
+**Migration Completed:** October 15, 2025
+
+**Build Command:**
 ```bash
-#!/bin/bash
-docker_dir=$(dirname $0)
-pushd ${docker_dir}
-docker build . -t brianerickson/ros2-jazzy
-popd
+docker exec car bash -c "cd /root/ros2_ws && colcon build --packages-select joy_soundboard_ros --symlink-install --paths src/joy_soundboard_ros"
 ```
 
-**Runtime Script Pattern (dual workspace mounting):**
+**Run Command:**
 ```bash
-# Mount both workspaces for transition period
--v ~/red-crash/ws:/root/ws \
--v ~/red-crash/ros2:/root/ros2_ws \
+docker exec car bash -c "source /opt/ros/jazzy/setup.bash && source /root/ros2_ws/install/setup.bash && ros2 run joy_soundboard_ros joy_soundboard"
 ```
 
-**Key Principles:**
-- **No premature Docker changes** - wait until ROS2 packages are ready
-- **Maintain existing functionality** - current container must keep working
-- **Reference-back pattern** - scripts use relative paths from docker folder
-- **Incremental adoption** - add ROS2 support alongside existing ROS1
-
-**Estimated Effort:** 2-3 hours (when first ROS2 package is ready)
-**Risk Level:** Low - Existing container remains untouched until needed
+**Notes:**
+- Sound files can be copied as-is (format-agnostic)
+- `sox` command-line tool works identically in ROS2 environment
+- Button timing logic (1-second message age check) should be preserved
+start time 6:51 pm, estimate 
 
 # Migration Tracker
 
@@ -271,4 +190,7 @@ popd
 [x] Manually test and verify (Brian)
 [x] Test with Foxglove studio
 [x] Implement motor control for teleop (roboclaw)
-[ ] Manually test and verify roboclaw + joystick integration (Brian)
+[x] Manually test and verify roboclaw + joystick integration (Brian)
+[x] Get soundboard working
+[ ] Get speech module working
+[ ] Get depthai-ros working
