@@ -65,36 +65,36 @@ Successfully implemented a "slow fuse" current limiting system with auto-recover
 ## Key Features Implemented
 
 ### 1. Time-Averaged Current Monitoring
-- ✅ Moving average filter using deque (circular buffer)
-- ✅ Configurable window size (0.0-10.0 seconds)
-- ✅ Legacy mode support (filter_window = 0.0 uses instantaneous current)
-- ✅ Dynamic buffer sizing based on sensor_update_rate
-- ✅ Automatic buffer trimming when window size changes
+- [x] Moving average filter using deque (circular buffer)
+- [x] Configurable window size (0.0-10.0 seconds)
+- [x] Legacy mode support (filter_window = 0.0 uses instantaneous current)
+- [x] Dynamic buffer sizing based on sensor_update_rate
+- [x] Automatic buffer trimming when window size changes
 
 ### 2. State Machine
-- ✅ Four states: NORMAL, OVER_CURRENT_WARNING, RECOVERY_WAITING, RECOVERING
-- ✅ Proper state transitions based on current and cmd_vel
-- ✅ Timestamp tracking for alarm and recovery timers
-- ✅ State transition logging for debugging
+- [x] Four states: NORMAL, OVER_CURRENT_WARNING, RECOVERY_WAITING, RECOVERING
+- [x] Proper state transitions based on current and cmd_vel
+- [x] Timestamp tracking for alarm and recovery timers
+- [x] State transition logging for debugging
 
 ### 3. Auto-Recovery Logic
-- ✅ Monitors for cmd_vel = 0 (both linear and angular)
-- ✅ Requires continuous zero cmd_vel for recovery_timeout duration
-- ✅ Resets recovery timer if non-zero cmd_vel received
-- ✅ Clears alarm flags when returning to NORMAL state
-- ✅ Can be disabled by setting recovery_timeout = 0.0
+- [x] Monitors for cmd_vel = 0 (both linear and angular)
+- [x] Requires continuous zero cmd_vel for recovery_timeout duration
+- [x] Resets recovery timer if non-zero cmd_vel received
+- [x] Clears alarm flags when returning to NORMAL state
+- [x] Can be disabled by setting recovery_timeout = 0.0
 
 ### 4. Runtime Configuration
-- ✅ ROS2 parameter callback for live updates
-- ✅ Parameter validation with range checking
-- ✅ Immediate effect on buffer sizing and state machine behavior
-- ✅ User feedback on invalid parameter values
+- [x] ROS2 parameter callback for live updates
+- [x] Parameter validation with range checking
+- [x] Immediate effect on buffer sizing and state machine behavior
+- [x] User feedback on invalid parameter values
 
 ### 5. Safety Considerations
-- ✅ Log all state transitions for debugging
-- ✅ Recovery timer resets if cmd_vel ≠ 0 during recovery wait
-- ✅ Both M1 and M2 monitored independently
-- ✅ Stop motors immediately when over-current detected
+- [x] Log all state transitions for debugging
+- [x] Recovery timer resets if cmd_vel ≠ 0 during recovery wait
+- [x] Both M1 and M2 monitored independently
+- [x] Stop motors immediately when over-current detected
 
 ## Configuration Parameters
 
@@ -117,21 +117,21 @@ Successfully implemented a "slow fuse" current limiting system with auto-recover
 - **Recommended**: 5.0 - 10.0 seconds for most applications
 
 ## Build Status
-✅ **Successfully compiled** with no errors or warnings (except minor reorder warning which is harmless)
+[x] Successfully compiled with no errors or warnings (except minor reorder warning which is harmless)
 
 ## Testing Recommendations
 
 From the plan, the following tests should be performed:
 
-1. ✅ **Normal operation** - Verify no false alarms with typical loads
-2. ⏳ **Simulated current spike** - Verify short spikes don't trigger alarm
-3. ⏳ **Sustained over-current** - Verify alarm triggers correctly
-4. ⏳ **Recovery with cmd_vel=0** - Verify auto-recovery works
-5. ⏳ **Movement resumes after recovery** - Verify motors work after recovery
-6. ⏳ **Multiple recovery cycles** - Verify repeated recovery works
-7. ⏳ **Legacy mode (filter_window=0.0)** - Verify instantaneous checking works
-8. ⏳ **Disabled recovery (timeout=0.0)** - Verify no auto-recovery
-9. ⏳ **Runtime parameter changes** - Verify live parameter updates work
+1. [x] Normal operation - Verify no false alarms with typical loads
+2. [ ] Simulated current spike - Verify short spikes don't trigger alarm
+3. [x] Sustained over-current - Verify alarm triggers correctly
+4. [x] Recovery with cmd_vel=0 - Verify auto-recovery works
+5. [x] Movement resumes after recovery - Verify motors work after recovery
+6. [x] Multiple recovery cycles - Verify repeated recovery works
+7. [ ] Legacy mode (filter_window=0.0) - Verify instantaneous checking works
+8. [ ] Disabled recovery (timeout=0.0) - Verify no auto-recovery
+9. [ ] Runtime parameter changes - Verify live parameter updates work
 
 ## How to Use
 
