@@ -1,43 +1,46 @@
-# ROS2 Jazzy Docker Setup for Red-Crash2
+# ROS2 Jazzy Docker Configuration
 
-This directory contains the Docker configuration for running ROS2 Jazzy with the red-crash2 project.
+This directory contains the Docker configuration for building the ROS2 Jazzy environment for the red-crash robot.
 
-## Quick Start
+## Building the Image
 
-1. **Build the Docker image:**
-   ```bash
-   cd /home/pi/red-crash/red-crash2/docker
-   ./build
-   ```
+```bash
+./build
+```
 
-2. **Start the container:**
-   ```bash
-   ./start
-   ```
+This creates the `brianerickson/ros2-jazzy` image.
 
-## Docker Configuration
+## Starting the Container
+
+```bash
+./start [mode]
+```
+
+Modes:
+- `all` (default) - Launch all nodes via `launch_all.screenrc`
+- `basic` - Launch basic nodes via `launch_basic.screenrc`
+- `none` - Start container without launching nodes
+
+For usage and container management, see the main README.md.
+
+## Docker Image Configuration
 
 ### Base Image
 - **ros:jazzy-perception** - Provides ROS2 Jazzy with perception packages
 
-### Installed Packages
-
-#### ROS2 Core Packages
+### Installed ROS2 Packages
 - `ros-jazzy-rosbridge-suite` - Web bridge for ROS2
 - `ros-jazzy-diagnostics` - System diagnostics
 - `ros-jazzy-joy` - Joystick support
 - `ros-jazzy-teleop-twist-joy` - Joystick teleoperation
-
-#### Navigation Stack
 - `ros-jazzy-navigation2` - Nav2 navigation stack
 - `ros-jazzy-nav2-bringup` - Navigation launch files
 - `ros-jazzy-slam-toolbox` - SLAM implementation
 - `ros-jazzy-robot-localization` - Robot localization
-
-#### Camera Support
 - `ros-jazzy-depthai-ros` - Official OAK-D camera driver
 - `ros-jazzy-depthai-bridge` - DepthAI bridge
 - `ros-jazzy-depthai-descriptions` - Camera descriptions
+- `ros-jazzy-foxglove-bridge` - Foxglove visualization
 
 #### Development Tools
 - `python3-colcon-common-extensions` - ROS2 build tool
@@ -85,11 +88,6 @@ colcon build
 source install/setup.bash
 ```
 
-### Running ROS2 Nodes
-```bash
-# Example: Launch joystick node
-ros2 launch teleop_twist_joy teleop-launch.py
-```
 
 ### Screen usage
 The container uses GNU Screen to launch multiple ROS2 nodes in separate tabs. Configuration files like `launch_all.screenrc` automatically start all nodes (joy, roboclaw, foxglove, soundboard, speech) in individual screens that you can switch between with Ctrl-A followed by the screen number.
@@ -100,13 +98,9 @@ During migration, both ROS1 and ROS2 workspaces are accessible:
 - ROS1: `/root/ws` (legacy, read-only access)
 
 ## Migration Status
-This Docker setup supports the ROS2 Jazzy migration as outlined in `migration.md`. It provides:
 
-✅ **Modern ROS2 base** - Jazzy perception stack  
-✅ **Navigation2** - Replaces ROS1 move_base  
-✅ **Official OAK-D driver** - Replaces custom implementation  
-✅ **Development tools** - colcon, debugging utilities  
-✅ **Parallel operation** - Can run alongside ROS1 container  
+This project is currently being ported from Noetic to Jazzy, See `migration.md`.
+
 
 ## Container Management
 
