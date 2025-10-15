@@ -50,8 +50,8 @@ def generate_launch_description():
                 'm2_qpps': 2437,
                 
                 # Current limits
-                'm1_max_current': 25.0,
-                'm2_max_current': 25.0,
+                'm1_max_current': 3.0,
+                'm2_max_current': 3.0,
                 
                 # Velocity limits
                 'max_angular_velocity': 2.0,
@@ -76,6 +76,10 @@ def generate_launch_description():
                 
                 # Serial timeout (seconds, 0.0 disables timeout)
                 'serial_timeout': 0.5,
+                
+                # Current protection parameters
+                'current_filter_window_seconds': 1.0,
+                'recovery_timeout_seconds': 5.0,
                 
                 # Debug settings
                 'do_debug': False,
