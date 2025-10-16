@@ -1,4 +1,4 @@
-/**:
+/foxglove_bridge:
   ros__parameters:
     # Fixes warning: "Max history depth 10 is less than the requested depth of 12 for topic /rosout"
     # Increase QoS depth to prevent limiting rosout messages

@@ -18,7 +18,7 @@ select 2
 stuff "ros2 launch launch/roboclaw.launch.py\n"
 
 select 3
-stuff "ros2 launch foxglove_bridge foxglove_bridge_launch.xml params_file:=/root/ros2_ws/config/foxglove_config.yaml\n"
+stuff "ros2 launch foxglove_bridge foxglove_bridge_launch.xml min_qos_depth:=20 max_qos_depth:=50\n"
 
 select 4
 stuff "ros2 run joy_soundboard_ros joy_soundboard\n"
