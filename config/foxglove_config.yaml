@@ -1,0 +1,10 @@
+/**:
+  ros__parameters:
+    # Fixes warning: "Max history depth 10 is less than the requested depth of 12 for topic /rosout"
+    # Increase QoS depth to prevent limiting rosout messages
+    max_qos_depth: 20
+    
+    # Optional: Additional foxglove bridge parameters
+    # port: 8765
+    # address: 0.0.0.0
+    # send_buffer_limit: 10000000

@@ -1,0 +1,69 @@
+/**:
+  ros__parameters:
+    camera:
+      # Pipeline configuration
+      i_pipeline_type: RGBD           # RGB + Depth pipeline
+      i_nn_type: spatial              # Enable spatial neural network for object detection
+      i_enable_imu: true              # Enable IMU data
+      i_enable_ir: true               # Enable IR illumination for stereo
+      i_publish_tf_from_calibration: true  # Publish TF from camera calibration
+      
+      # Camera model (auto-detected, but can be overridden)
+      # i_mx_id: ""                   # Optional: Specify camera by MX ID
+      # i_usb_port_id: ""             # Optional: Specify camera by USB port
+      
+      # Output image size (reduced for lower latency)
+      i_rgb_resolution: 480p          # Use 720p instead of 1080p (faster)
+      i_mono_resolution: 400p         # 400p for stereo cameras
+      
+    # RGB camera configuration  
+    rgb:
+      i_publish_topic: true
+      i_enable_preview: true
+      i_preview_size: 300
+      i_fps: 15.0                     # Reduce from default 30 to 15 fps for less bandwidth
+      i_low_bandwidth: true           # Enable low bandwidth mode (compression)
+      i_low_bandwidth_quality: 50     # JPEG quality 50% (balance quality/size)
+      r_iso: 800                      # ISO setting
+      r_exposure: 20000               # Exposure time (microseconds)
+      r_focus: 130                    # Manual focus (0-255, 255=infinity)
+      r_set_man_focus: true           # Enable manual focus
+    
+    # Stereo camera configuration
+    stereo:
+      i_publish_topic: true
+      i_fps: 15.0                     # Reduce stereo fps to match RGB
+      i_enable_compressor: true       # Enable compression for depth images
+      i_low_bandwidth: true           # Enable low bandwidth mode
+      i_output_disparity: false       # Output disparity instead of depth
+      
+    # Left mono camera
+    left:
+      i_publish_topic: true
+      i_fps: 15.0                     # Reduce fps
+      i_low_bandwidth: true           # Enable compression
+      
+    # Right mono camera  
+    right:
+      i_publish_topic: true
+      i_fps: 15.0                     # Reduce fps
+      i_low_bandwidth: true           # Enable compression
+    
+    # Neural network configuration for object detection
+    nn:
+      i_nn_config_path: depthai_ros_driver/mobilenet  # Use built-in MobileNet-SSD
+      # Alternative models:
+      # i_nn_config_path: depthai_ros_driver/yolov6
+      # i_nn_config_path: depthai_ros_driver/yolov4
+      
+    # IMU configuration
+    imu:
+      i_acc_freq: 100                 # Accelerometer frequency (Hz)
+      i_gyro_freq: 100                # Gyroscope frequency (Hz)
+      i_batch_report_threshold: 1
+      i_max_batch_reports: 10
+    
+    # Foxglove bridge configuration
+    # Fixes warning: "Max history depth 10 is less than the requested depth of 12 for topic /rosout"
+    foxglove_bridge:
+      max_qos_depth: 20               # Increase QoS depth to handle rosout messages (default: 10)

@@ -195,5 +195,5 @@ done
 [x] Manually test and verify roboclaw + joystick integration (Brian)
 [x] Get soundboard working
 [x] Migrate speech_ros package to ROS2
-[ ] Test speech_ros (install Python dependencies, test speech recognition and TTS)
+[x] Test speech_ros (install Python dependencies, test speech recognition and TTS)
 [ ] Get depthai-ros working

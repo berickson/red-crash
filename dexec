@@ -1,0 +1,5 @@
+#!/bin/bash
+# Helper script to execute ROS commands in the car docker container
+# Usage: ./dexec "ros2 node list"
+
+docker exec car bash -l -c "$@"
