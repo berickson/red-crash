@@ -67,9 +67,9 @@ class CommandInterpreterNode(Node):
         
         try:
             response = self.openai_client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4.1",  
                 messages=[
-                    {"role": "system", "content": "You are Red Crash, a friendly autonomous robot. Keep responses brief and conversational (1-2 sentences). You have a playful personality."},
+                    {"role": "system", "content": "You are Red Crash, a friendly autonomous robot with six wheels and a plastic pumpkin head filled with candy. Keep responses brief and conversational (1-2 sentences). You have a playful personality."},
                     {"role": "user", "content": question}
                 ],
                 max_tokens=100,
