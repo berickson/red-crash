@@ -101,10 +101,14 @@ The RoboClaw device provides comprehensive built-in diagnostics via the **GETERR
 ## Implementation Tasks
 
 ### Phase 1: Basic Diagnostics
-- [ ] Add diagnostic_updater dependency to package.xml
-- [ ] Create DiagnosticTask class for RoboClaw
-- [ ] Implement basic communication health monitoring
-- [ ] Publish initial diagnostics
+- [x] Add diagnostic_updater dependency to package.xml
+- [x] Create DiagnosticTask class for RoboClaw
+- [x] Implement basic communication health monitoring
+- [x] Publish initial diagnostics
+- [x] **1a. Remove connection_state from RoboClawStatus message** - Connection state belongs in diagnostics, not sensor data. Status messages should stop publishing when disconnected. Clients detect disconnection via message timestamp monitoring or diagnostics subscription.
+  - Removed `connection_state` field from `msg/RoboClawStatus.msg`
+  - Updated `motor_driver_node.cpp` to only publish status when CONNECTED
+  - Created `CONNECTION_STATE_DESIGN.md` documenting the design rationale
 
 ### Phase 2: Device Metrics
 - [ ] Add battery voltage monitoring
