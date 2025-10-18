@@ -111,24 +111,24 @@ The RoboClaw device provides comprehensive built-in diagnostics via the **GETERR
   - Created `CONNECTION_STATE_DESIGN.md` documenting the design rationale
 
 ### Phase 2: Device Metrics
-- [ ] Add battery voltage monitoring
-- [ ] Add motor current monitoring
-- [ ] Add temperature monitoring
-- [ ] Add error flag decoding
+- [x] Add battery voltage monitoring
+- [x] Add motor current monitoring
+- [x] Add temperature monitoring
+- [x] Add error flag decoding
 
-### Phase 3: Advanced Monitoring
-- [ ] Implement trend analysis
-- [ ] Add configurable thresholds via parameters
-- [ ] Implement detailed error reporting
-- [ ] Add performance metrics
+### Phase 2a: Missing Diagnostic Details
+- [x] Add firmware version (without triggering new command)
+- [x] Add consecutive_errors tracking
+- [x] Add total_messages and total_errors tracking
+- [x] Add last_successful_communication timestamp
+- [x] Add smoothed motor currents (m1_current_average_, m2_current_average_)
+- [x] Add encoder status (not just position)
+- [x] Add time_since_cmd_vel tracking
+- [x] Add time_since_last_update monitoring (use last_sensor_read_time_)
 
-### Phase 4: Integration
-- [ ] Test by unplugging and replugging. Should see error in state in diagnostics, and it should recover after re-plugged and resume normal operation
-- [ ] Test with Foxglove Studio
-- [ ] Test with rqt_robot_monitor
+
+### Phase 3: Integration
 - [ ] Document diagnostic keys and meanings in README.md
-- [ ] Add launch file configuration
-- [ ] Update README.md
 
 ## Configuration Parameters
 
@@ -145,40 +145,46 @@ roboclaw_diagnostics:
 
 ## Diagnostic Keys
 
-- `roboclaw`: Top-level device status (aggregates all sub-diagnostics)
-  - Reports: firmware version, connection state, overall health
-  
-- `roboclaw: Communication`: Serial communication health
-  - Reports: consecutive_errors_, last_successful_communication_, connection_state_
-  - Status from: Driver tracking, not device
-  
-- `roboclaw: Hardware Status`: Device hardware status
-  - Reports: error_status bits decoded, error_string from device
-  - Status from: Device GETERROR command (bits 0-31)
-  
-- `roboclaw: Battery`: Battery voltage status
-  - Reports: main_battery_level, logic_battery_level
-  - Status from: Device CmdReadMainBatteryVoltage/CmdReadLogicBatteryVoltage
-  - Check against: warning/error bits 5,6,7,10,11 from device status
-  
-- `roboclaw: Motor 1`: Motor 1 status
-  - Reports: m1_current_average_, encoder status, velocity, over-current alarm
-  - Status from: Device CmdReadMotorCurrents + driver filtering + encoder commands
-  - Check against: device bit 0 (M1 OverCurrent), bit 9 (M1 Driver Fault)
-  
-- `roboclaw: Motor 2`: Motor 2 status
-  - Reports: m2_current_average_, encoder status, velocity, over-current alarm
-  - Status from: Device CmdReadMotorCurrents + driver filtering + encoder commands
-  - Check against: device bit 1 (M2 OverCurrent), bit 8 (M2 Driver Fault)
-  
-- `roboclaw: Temperature`: Device temperature
-  - Reports: temperature value
-  - Status from: Device CmdReadTemperature
-  - Check against: device bits 3,4,12,13 (temp errors and warnings)
-  
-- `roboclaw: Current Protection`: Software current protection state
-  - Reports: current_protection_state_, recovery status, cmd_vel tracking
-  - Status from: Driver software state machine (not device)
+- `roboclaw`: Single top-level device status (all information in one diagnostic)
+  - Level: Aggregate worst status from all subsystems
+  - Message: Brief summary of overall health
+  - Details (key-value pairs):
+    - **Firmware**: firmware_version - Device firmware version string cached at startup
+    - **Connection**: 
+      - connection_state - CONNECTED or DISCONNECTED based on serial communication
+      - consecutive_errors - Number of failed commands in a row (resets on success)
+      - total_messages - Lifetime count of all serial commands sent to device
+      - total_errors - Lifetime count of all failed serial commands
+      - last_successful_communication - Timestamp of last successful device response
+    - **Hardware Status**: 
+      - error_status - 32-bit status word from device GETERROR command
+      - error_string - Human-readable decode of error_status bits
+    - **Battery**: 
+      - main_battery_voltage - Motor power supply voltage from device
+      - logic_battery_voltage - Logic power supply voltage from device
+      - battery warning/error flags - Decoded bits for high/low voltage conditions
+    - **Motor 1**: 
+      - m1_current_smoothed - Smoothed current over filter_window_seconds (same window as current limiting)
+      - encoder_position - Quadrature encoder count from device
+      - encoder_velocity - Encoder speed in counts/sec from device
+      - over-current state - Device hardware over-current warning flag
+      - driver fault - Device hardware driver fault flag
+    - **Motor 2**: 
+      - m2_current_smoothed - Smoothed current over filter_window_seconds (same window as current limiting)
+      - encoder_position - Quadrature encoder count from device
+      - encoder_velocity - Encoder speed in counts/sec from device
+      - over-current state - Device hardware over-current warning flag
+      - driver fault - Device hardware driver fault flag
+    - **Temperature**: 
+      - temperature_value - Device board temperature in Celsius
+      - temperature warning/error flags - Decoded bits for temp thresholds
+    - **Current Protection**: 
+      - current_protection_state - Software state machine (NORMAL/WARNING/WAITING/RECOVERING)
+      - recovery_status - Details of recovery attempt if in RECOVERY_WAITING state
+      - time_since_cmd_vel - Seconds since last non-zero velocity command (for auto-recovery)
+    - **Performance**: 
+      - sensor_update_rate - Actual Hz of readSensorGroup() calls (calculated from time between consecutive calls)
+      - time_since_last_update - Seconds since last successful sensor read (detects stale data)
 
 ## References
 - ROS2 diagnostic_updater: https://github.com/ros/diagnostics
