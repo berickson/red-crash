@@ -6,3 +6,4 @@
 4. NEVER modify completion status ([x] or [ ]) in any document without explicit user permission
 5. There is a docker named car that has the ROS2 workspace at /root/ros2_ws
 6. Use colcon build --symlink-install to build packages within the ROS2 docker container
+example docker exec car bash -c "cd /root/ros2_ws && colcon build --symlink-install --packages-select ros2_roboclaw_driver"
