@@ -2,6 +2,7 @@ log/
 build/
 install/
 devel/
-__pycache__
+__pycache__/
 secrets.env
 *.key
+launch/__pycache__/joy.launch.cpython-312.pyc

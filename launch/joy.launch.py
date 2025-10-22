@@ -13,8 +13,8 @@ def generate_launch_description():
             name='ps3_joy',
             output='screen',
             parameters=[{
-                'deadzone': 0.012,  # Match original deadzone
-                'autorepeat_rate': 5.0,  # Match original autorepeat_rate
+                'deadzone': 0.0001,  # (Reduced) Match original deadzone
+                'autorepeat_rate': 50.0,  # Match original autorepeat_rate
             }]
         ),
         
@@ -24,6 +24,9 @@ def generate_launch_description():
             executable='teleop_node',
             name='teleop_node',
             output='screen',
+            remappings=[
+                ('cmd_vel', 'fake_cmd_vel'),
+            ],
             parameters=[{
                 'axis_angular.yaw': 0,  # Left stick horizontal
                 'axis_linear.x': 1,     # Left stick vertical
