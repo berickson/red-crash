@@ -1,3 +1,9 @@
+Status: Solved
+Reason: PID P term was so high that it was causing problems
+
+
+
+
 # Velocity Response Lag Issue Plan
 
 ## Description

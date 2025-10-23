@@ -1,7 +1,11 @@
+Status: Solved
+Reason: PID P term was so high that it was causing problems
+
 # Velocity Tracking Issue - Root Cause & Fix
 
 **Date:** October 22, 2025  
 **Issue:** Robot wheels fail to reach commanded velocity setpoints
+
 
 ## Root Cause
 
