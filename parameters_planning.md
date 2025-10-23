@@ -368,7 +368,7 @@ ros2 param describe roboclaw_node m1_max_current
 
 ### Step 3: Implement Runtime Parameter Updates (High Priority)
 - [ ] Create parameter callback that handles all 18 runtime-changeable parameters:
-  - [ ] PID parameters (m1_pid_p, m1_pid_i, m1_pid__d, m1_pid_qpps_max, m2_pid_p, m2_pid_i, m2_pid_d, m2_qpps_max)
+  - [x] PID parameters (m1_pid_p, m1_pid_i, m1_pid__d, m1_pid_qpps_max, m2_pid_p, m2_pid_i, m2_pid_d, m2_pid_qpps_max)
   - [ ] Motion limits (max_linear_velocity, max_angular_velocity, max_linear_acceleration)
   - [ ] Current limits (m1_max_current, m2_max_current)
   - [ ] Current protection (current_filter_window_seconds, recovery_timeout_seconds)
