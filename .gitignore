@@ -2,6 +2,7 @@ log/
 build/
 install/
 devel/
+output/
 __pycache__/
 secrets.env
 *.key

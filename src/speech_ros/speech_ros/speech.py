@@ -70,10 +70,31 @@ class SpeechNode(Node):
             phrase_time_limit=5.0)
         
         self.get_logger().info("Listening in the background")
+
+    def play_audio(self, audio_data):
+        self.get_logger().info("Playing audio")
+        """Play audio data using system command"""
+        with open('temp_audio.wav', 'wb') as f:
+            f.write(audio_data.get_wav_data())
+        
+        speaker_volume_percent = self.get_parameter('speaker_volume_percent').value
+        os.system(f"play --no-show-progress --volume {speaker_volume_percent / 100.0} temp_audio.wav 2>/dev/null")
+        os.remove('temp_audio.wav')
+
+    def save_utterance(self, audio_data):
+        """Save the audio data to a file for debugging"""
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        filename = f"/root/ros2_ws/output/audio/utterance_{timestamp}.wav"
+        os.makedirs("/root/ros2_ws/output/audio/", exist_ok=True)
+        with open(filename, 'wb') as f:
+            f.write(audio_data.get_wav_data())
+        self.get_logger().info(f"Saved utterance to {filename}")
     
     def listen_callback(self, recognizer, audio):
         """Called when audio is detected"""
         try:
+            self.save_utterance(audio);
+            self.play_audio(audio)
             # Use Google Speech Recognition API
             utterance = recognizer.recognize_google(audio)
             self.get_logger().info(f'heard: "{utterance}"')
