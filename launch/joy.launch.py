@@ -24,9 +24,9 @@ def generate_launch_description():
             executable='teleop_node',
             name='teleop_node',
             output='screen',
-            remappings=[
-                ('cmd_vel', 'fake_cmd_vel'),
-            ],
+            # remappings=[
+            #     ('cmd_vel', 'fake_cmd_vel'),
+            # ],
             parameters=[{
                 'axis_angular.yaw': 0,  # Left stick horizontal
                 'axis_linear.x': 1,     # Left stick vertical

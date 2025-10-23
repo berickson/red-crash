@@ -84,13 +84,13 @@ void declareMotorDriverParameters(rclcpp::Node::SharedPtr node) {
 
 | Parameter | Type | Default | Range | Runtime | Description |
 |-----------|------|---------|-------|---------|-------------|
-| `m1_p` | float | 5000.0 | 0.0-100000.0 | Yes | Motor 1 (left) PID proportional gain |
-| `m1_i` | float | 0.0 | 0.0-100000.0 | Yes | Motor 1 (left) PID integral gain |
-| `m1_d` | float | 0.0 | 0.0-100000.0 | Yes | Motor 1 (left) PID derivative gain |
-| `m1_qpps` | int | 2437 | 0-1000000 | Yes | Motor 1 max speed in quad pulses/sec (for PID scaling, not a limit) |
-| `m2_p` | float | 5000.0 | 0.0-100000.0 | Yes | Motor 2 (right) PID proportional gain |
-| `m2_i` | float | 0.0 | 0.0-100000.0 | Yes | Motor 2 (right) PID integral gain |
-| `m2_d` | float | 0.0 | 0.0-100000.0 | Yes | Motor 2 (right) PID derivative gain |
+| `m1_pid_p` | float | 5000.0 | 0.0-100000.0 | Yes | Motor 1 (left) PID proportional gain |
+| `m1_pid_i` | float | 0.0 | 0.0-100000.0 | Yes | Motor 1 (left) PID integral gain |
+| `m1_pid_d` | float | 0.0 | 0.0-100000.0 | Yes | Motor 1 (left) PID derivative gain |
+| `m1_pid_qpps_max` | int | 2437 | 0-1000000 | Yes | Motor 1 max speed in quad pulses/sec (for PID scaling, not a limit) |
+| `m2_pid_p` | float | 5000.0 | 0.0-100000.0 | Yes | Motor 2 (right) PID proportional gain |
+| `m2_pid_i` | float | 0.0 | 0.0-100000.0 | Yes | Motor 2 (right) PID integral gain |
+| `m2_pid_d` | float | 0.0 | 0.0-100000.0 | Yes | Motor 2 (right) PID derivative gain |
 | `m2_qpps` | int | 2437 | 0-1000000 | Yes | Motor 2 max speed in quad pulses/sec (for PID scaling, not a limit) |
 
 **Important**: `qpps` (quadrature pulses per second) is **NOT** a velocity limit - it's a PID tuning parameter that tells the RoboClaw's internal PID controller what the expected maximum speed is for proper gain scaling. Use `max_linear_velocity` to actually limit robot speed.
@@ -363,12 +363,12 @@ ros2 param describe roboclaw_node m1_max_current
 - [x] Add `max_linear_acceleration` parameter (replaces accel_quad_pulses_per_second)
 - [x] Update velocity/odometry calculations to use meters_per_quad_pulse
 - [x] Update acceleration commands to use max_linear_acceleration
-- [x] Keep m1_qpps/m2_qpps in encoder units (PID tuning parameter, not user-facing limit)
+- [x] Keep m1_pid_qpps_max/m2_qpps in encoder units (PID tuning parameter, not user-facing limit)
 - [x] Add deprecation warnings for old parameters
 
 ### Step 3: Implement Runtime Parameter Updates (High Priority)
 - [ ] Create parameter callback that handles all 18 runtime-changeable parameters:
-  - [ ] PID parameters (m1_p, m1_i, m1_d, m1_qpps, m2_p, m2_i, m2_d, m2_qpps)
+  - [ ] PID parameters (m1_pid_p, m1_pid_i, m1_pid__d, m1_pid_qpps_max, m2_pid_p, m2_pid_i, m2_pid_d, m2_qpps_max)
   - [ ] Motion limits (max_linear_velocity, max_angular_velocity, max_linear_acceleration)
   - [ ] Current limits (m1_max_current, m2_max_current)
   - [ ] Current protection (current_filter_window_seconds, recovery_timeout_seconds)

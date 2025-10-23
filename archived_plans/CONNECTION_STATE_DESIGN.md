@@ -122,19 +122,19 @@ Reports software current protection state machine
 The `RoboClawStatus` message contains **only sensor readings**, not connection state:
 
 ```
-float32  m1_p
-float32  m1_i
-float32  m1_d
-uint32   m1_qpps
+float32  m1_pid_p
+float32  m1_pid_i
+float32  m1_pid_d
+uint32   m1_pid_qpps_max
 int32    m1_current_speed
 float32  m1_motor_current
 int32    m1_encoder_value
 uint8    m1_encoder_status
 
-float32  m2_p
-float32  m2_i
-float32  m2_d
-uint32   m2_qpps
+float32  m2_pid_p
+float32  m2_pid_i
+float32  m2_pid_d
+uint32   m2_pid_qpps
 int32    m2_current_speed
 float32  m2_motor_current
 int32    m2_encoder_value

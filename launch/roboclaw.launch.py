@@ -39,14 +39,14 @@ def generate_launch_description():
                 'accel_quad_pulses_per_second': 32000,
                 
                 # PID settings (from original config)
-                'm1_p': 5000.0,
-                'm1_i': 0.0,
-                'm1_d': 0.0,
-                'm1_qpps': 2437,
-                'm2_p': 5000.0,
-                'm2_i': 0.0,
-                'm2_d': 0.0,
-                'm2_qpps': 2437,
+                'm1_pid_p': 5000.0,
+                'm1_pid_i': 0.0,
+                'm1_pid_d': 0.0,
+                'm1_pid_qpps_max': 2437,
+                'm2_pid_p': 5000.0,
+                'm2_pid_i': 0.0,
+                'm2_pid_d': 0.0,
+                'm2_pid_qpps_max': 2437,
                 
                 # Current limits
                 'm1_max_current': 10.0,
