@@ -30,11 +30,11 @@ def generate_launch_description():
             parameters=[{
                 'axis_angular.yaw': 0,  # Left stick horizontal
                 'axis_linear.x': 1,     # Left stick vertical
-                'enable_button': 0,  # X button (button 0)
-                'scale_linear.x': 0.2,
+                'enable_button': 1,  # B Button
+                'scale_linear.x': 0.5,
                 'scale_angular.yaw': 0.05,
-                'enable_turbo_button': 1,  # Circle button (button 1)
-                'scale_linear_turbo.x': 0.5,
+                'enable_turbo_button': 0,  # A Button
+                'scale_linear_turbo.x': 1.5,
                 'scale_angular_turbo.yaw': 0.1,
             }]
         ),        # Soundboard Node (will need to be migrated separately)

@@ -35,7 +35,7 @@ class JoySoundboardNode(Node):
         if len(matches) == 1:
             sound_path = f'"{matches[0]}"'
             self.get_logger().info(f'Playing {sound_path}')
-            os.system(f'play {sound_path}')
+            os.system(f'play -v 4.0 {sound_path}')
         elif len(matches) == 0:
             self.get_logger().debug(f'No sound file found for button {button_number}')
         else:

@@ -13,9 +13,6 @@
 [submodule "ws/src/oakd"]
 	path = noetic/ws/src/oakd
 	url = git@github.com:berickson/oakd.git
-[submodule "ws/src/depthai-ros"]
-	path = noetic/hide/depthai-ros
-	url = git@github.com:berickson/depthai-ros.git
 [submodule "ws/src/depthai-ros-examples"]
 	path = noetic/hide/depthai-ros-examples
 	url = git@github.com:berickson/depthai-ros-examples.git

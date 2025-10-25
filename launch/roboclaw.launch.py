@@ -36,7 +36,7 @@ def generate_launch_description():
                 'device_port': LaunchConfiguration('device_port'),
                 
                 # Acceleration control
-                'accel_quad_pulses_per_second': 32000,
+                'max_linear_acceleration': 2.5,
                 
                 # PID settings (from original config)
                 'm1_pid_p': 3.0,
