@@ -47,38 +47,38 @@ class VelocityResponseTest(Node):
             
             # Track for summary (only if commanded speed > 0.05)
             if hasattr(self, 'velocity_errors') and msg.m1_commanded_speed > 0.05:
-                m1_pct_error = (m1_error / msg.m1_commanded_speed) * 100 if msg.m1_commanded_speed > 0 else 0
-                m2_pct_error = (m2_error / msg.m2_commanded_speed) * 100 if msg.m2_commanded_speed > 0 else 0
                 self.velocity_errors.append({
                     'sp': msg.m1_commanded_speed,
                     'pv_m1': msg.m1_current_speed,
                     'pv_m2': msg.m2_current_speed,
-                    'error_pct': (m1_pct_error + m2_pct_error) / 2.0
+                    'error_m1': m1_error,
+                    'error_m2': m2_error
                 })
-            
-            # Log SP vs PV
-            self.get_logger().info(
-                f't={elapsed:.2f}s | '
-                f'SP: M1={msg.m1_commanded_speed:.3f} M2={msg.m2_commanded_speed:.3f} m/s | '
-                f'PV: M1={msg.m1_current_speed:.3f} M2={msg.m2_current_speed:.3f} m/s | '
-                f'Error: M1={msg.m1_commanded_speed - msg.m1_current_speed:.3f} '
-                f'M2={msg.m2_commanded_speed - msg.m2_current_speed:.3f} m/s'
-            )
+
     
-    def send_cmd_vel(self, linear_x, angular_z=0.0):
+    def send_cmd_vel(self, linear_x, angular_z=0.0, log=False):
         """Send a velocity command"""
         cmd = Twist()
         cmd.linear.x = linear_x
         cmd.angular.z = angular_z
         self.cmd_vel_pub.publish(cmd)
         self.commanded_velocity = linear_x
-        self.get_logger().info(f'>>> SENT cmd_vel: linear.x={linear_x:.3f} angular.z={angular_z:.3f}')
+        if log:
+            self.get_logger().info(f'>>> SENT cmd_vel: linear.x={linear_x:.3f} angular.z={angular_z:.3f}')
     
     def run_step_test(self, target_velocity=0.3, duration=5.0):
         """Run a step input test"""
         self.get_logger().info('=' * 80)
-        self.get_logger().info(f'STARTING STEP TEST: Target={target_velocity:.3f} m/s, Duration={duration}s')
+        self.get_logger().info(f'STEP TEST: Target={target_velocity:.3f} m/s, Duration={duration}s')
         self.get_logger().info('=' * 80)
+        
+        # Confirmation prompt
+        response = input('Press ENTER to start motors, any other key to abort: ')
+        if response != '':
+            self.get_logger().info('Test aborted by user')
+            return
+        
+        self.get_logger().info('STARTING TEST...')
         
         # Start from zero
         self.send_cmd_vel(0.0)
@@ -95,7 +95,6 @@ class VelocityResponseTest(Node):
         
         # Stop
         self.send_cmd_vel(0.0)
-        self.get_logger().info('>>> SENT cmd_vel: STOP')
         time.sleep(1.0)
         
         self.test_start_time = None
@@ -103,47 +102,69 @@ class VelocityResponseTest(Node):
         self.get_logger().info('STEP TEST COMPLETE')
         self.get_logger().info('=' * 80)
     
-    def run_ramp_test(self, max_velocity=0.3, step=0.05, step_duration=2.0):
-        """Run a ramping velocity test"""
+    def run_ramp_test(self, max_velocity=0.3, ramp_up_time=2.0, flat_time=2.0, ramp_down_time=2.0):
+        """Run a ramping velocity test with custom timing
+        
+        Args:
+            max_velocity: Maximum velocity in m/s
+            ramp_up_time: Time to ramp from 0 to max_velocity (seconds)
+            flat_time: Time to hold at max_velocity (seconds)
+            ramp_down_time: Time to ramp from max_velocity to 0 (seconds)
+        """
         self.get_logger().info('=' * 80)
-        self.get_logger().info(f'STARTING RAMP TEST: Max={max_velocity:.3f} m/s, Step={step:.3f}, Duration={step_duration:.1f}s')
+        self.get_logger().info(f'RAMP TEST: Max={max_velocity:.3f} m/s')
+        self.get_logger().info(f'  Ramp up: {ramp_up_time:.1f}s, Flat: {flat_time:.1f}s, Ramp down: {ramp_down_time:.1f}s')
         self.get_logger().info('=' * 80)
+        
+        # Confirmation prompt
+        response = input('Press ENTER to start motors, any other key to abort: ')
+        if response != '':
+            self.get_logger().info('Test aborted by user')
+            return
+        
+        self.get_logger().info('STARTING TEST...')
         
         # Track errors for summary
         self.velocity_errors = []
+        
+        # 50 Hz update rate
+        dt = 0.02  # 20ms = 50Hz
         
         # Start from zero
         self.send_cmd_vel(0.0)
         time.sleep(1.0)
         
-        # Ramp up
         self.test_start_time = time.time()
-        velocity = step
-        while velocity <= max_velocity:
-            self.send_cmd_vel(velocity)
-            start_time = time.time()
-            while (time.time() - start_time) < step_duration:
-                rclpy.spin_once(self, timeout_sec=0.05)
-            velocity += step
         
-        # Hold at max
-        self.get_logger().info('>>> Holding at max velocity')
+        # Ramp up phase
         start_time = time.time()
-        while (time.time() - start_time) < step_duration:
-            rclpy.spin_once(self, timeout_sec=0.05)
-        
-        # Ramp down
-        velocity = max_velocity - step
-        while velocity >= 0:
+        while (time.time() - start_time) < ramp_up_time:
+            elapsed = time.time() - start_time
+            velocity = (elapsed / ramp_up_time) * max_velocity
+            velocity = min(velocity, max_velocity)  # Clamp to max
             self.send_cmd_vel(velocity)
-            start_time = time.time()
-            while (time.time() - start_time) < step_duration:
-                rclpy.spin_once(self, timeout_sec=0.05)
-            velocity -= step
+            rclpy.spin_once(self, timeout_sec=dt)
+            time.sleep(max(0, dt - 0.001))  # Account for processing time
+        
+        # Hold at max phase
+        start_time = time.time()
+        while (time.time() - start_time) < flat_time:
+            self.send_cmd_vel(max_velocity)
+            rclpy.spin_once(self, timeout_sec=dt)
+            time.sleep(max(0, dt - 0.001))
+        
+        # Ramp down phase
+        start_time = time.time()
+        while (time.time() - start_time) < ramp_down_time:
+            elapsed = time.time() - start_time
+            velocity = max_velocity * (1.0 - elapsed / ramp_down_time)
+            velocity = max(velocity, 0.0)  # Clamp to zero
+            self.send_cmd_vel(velocity)
+            rclpy.spin_once(self, timeout_sec=dt)
+            time.sleep(max(0, dt - 0.001))
         
         # Stop
         self.send_cmd_vel(0.0)
-        self.get_logger().info('>>> SENT cmd_vel: STOP')
         time.sleep(1.0)
         
         self.test_start_time = None
@@ -170,16 +191,18 @@ class VelocityResponseTest(Node):
             # Calculate average error for each setpoint
             for sp in sorted(sp_groups.keys()):
                 samples = sp_groups[sp]
-                avg_error = sum(s['error_pct'] for s in samples) / len(samples)
+                avg_error_m1 = sum(s['error_m1'] for s in samples) / len(samples)
+                avg_error_m2 = sum(s['error_m2'] for s in samples) / len(samples)
+                avg_error = (avg_error_m1 + avg_error_m2) / 2.0
                 avg_pv_m1 = sum(s['pv_m1'] for s in samples) / len(samples)
                 avg_pv_m2 = sum(s['pv_m2'] for s in samples) / len(samples)
                 max_pv_m1 = max(s['pv_m1'] for s in samples)
                 max_pv_m2 = max(s['pv_m2'] for s in samples)
                 
-                status = '✓' if avg_error < 5 else '⚠' if avg_error < 15 else '✗'
+                status = '✓' if avg_error < 0.05 else '⚠' if avg_error < 0.15 else '✗'
                 self.get_logger().info(
                     f'  {status} SP={sp:.1f} m/s: Avg PV M1={avg_pv_m1:.3f} M2={avg_pv_m2:.3f} | '
-                    f'Max PV M1={max_pv_m1:.3f} M2={max_pv_m2:.3f} | Avg Error={avg_error:.1f}%'
+                    f'Max PV M1={max_pv_m1:.3f} M2={max_pv_m2:.3f} | Avg Error={avg_error:.3f} m/s'
                 )
         
         self.get_logger().info('=' * 80)
@@ -205,54 +228,48 @@ def main(args=None):
         rclpy.shutdown()
         return 1
     
-    print('\n' + '=' * 80)
-    print('VELOCITY RESPONSE TEST')
-    print('=' * 80)
-    print('Robot should be on blocks with wheels free to spin.')
-    print('This test will send velocity commands and monitor the response.')
-    print('')
-    print('Tests available:')
-    print('  1) Step input (0 -> 1.0 m/s)')
-    print('  2) Medium step input (0 -> 0.5 m/s)')
-    print('  3) Small step input (0 -> 0.3 m/s)')
-    print('  4) Ramp test (0 -> 0.9 m/s in steps)')
-    print('  5) Rotation test (in-place rotation)')
-    print('  6) Custom step input')
-    print('  q) Quit')
-    print('=' * 80)
+    def print_menu():
+        print('\n' + '=' * 80)
+        print('VELOCITY RESPONSE TEST')
+        print('=' * 80)
+        print('Robot should be on blocks with wheels free to spin.')
+        print('This test will send velocity commands and monitor the response.')
+        print('')
+        print('Tests available:')
+        print('  1) Custom step input')
+        print('  2) Custom ramp test')
+        print('  q) Quit')
+        print('=' * 80)
+    
+    print_menu()
     
     try:
         while True:
-            choice = input('\nSelect test (1-6, q to quit): ').strip()
+            choice = input('\nSelect test (1-2, q to quit): ').strip()
             
             if choice == 'q':
                 break
             elif choice == '1':
-                test_node.run_step_test(target_velocity=1.0, duration=5.0)
-            elif choice == '2':
-                test_node.run_step_test(target_velocity=0.5, duration=5.0)
-            elif choice == '3':
-                test_node.run_step_test(target_velocity=0.3, duration=5.0)
-            elif choice == '4':
-                test_node.run_ramp_test(max_velocity=0.9, step=0.1, step_duration=0.2)
-            elif choice == '5':
-                # Rotation test
-                test_node.get_logger().info('ROTATION TEST')
-                test_node.test_start_time = time.time()
-                test_node.send_cmd_vel(0.0, angular_z=0.5)
-                time.sleep(3.0)
-                test_node.send_cmd_vel(0.0, angular_z=0.0)
-                test_node.test_start_time = None
-            elif choice == '6':
                 target = float(input('Enter target velocity (m/s): '))
                 duration = float(input('Enter duration (seconds): '))
                 test_node.run_step_test(target_velocity=target, duration=duration)
+            elif choice == '2':
+                # Custom ramp test
+                max_vel = float(input('Enter maximum velocity (m/s): '))
+                ramp_up = float(input('Enter ramp up time (seconds): '))
+                flat = float(input('Enter flat time (seconds): '))
+                ramp_down = float(input('Enter ramp down time (seconds): '))
+                test_node.run_ramp_test(max_velocity=max_vel, ramp_up_time=ramp_up, 
+                                       flat_time=flat, ramp_down_time=ramp_down)
             else:
                 print('Invalid choice')
             
             # Keep spinning to process messages
             for _ in range(10):
                 rclpy.spin_once(test_node, timeout_sec=0.1)
+            
+            # Print menu again after test completes
+            print_menu()
     
     except KeyboardInterrupt:
         print('\nTest interrupted by user')

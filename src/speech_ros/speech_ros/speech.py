@@ -55,14 +55,39 @@ class SpeechNode(Node):
         if self.use_microphone:
             self.setup_microphone()
     
+    def find_respeaker_device(self):
+        """Find the ReSpeaker microphone device index"""
+        import pyaudio
+        p = pyaudio.PyAudio()
+        
+        for i in range(p.get_device_count()):
+            info = p.get_device_info_by_index(i)
+            name = info.get('name', '').lower()
+            # ReSpeaker typically shows up with "respeaker" or "seeed" in the name
+            if 'respeaker' in name or 'seeed' in name:
+                self.get_logger().info(f"Found device: {info.get('name')} at index {i}")
+                p.terminate()
+                return i
+        
+        p.terminate()
+        return None
+    
     def setup_microphone(self):
         """Initialize microphone and start background listening"""
         self.recognizer = sr.Recognizer()
-        self.microphone = sr.Microphone()
+        
+        # Find ReSpeaker device
+        device_index = self.find_respeaker_device()
+        if device_index is not None:
+            self.get_logger().info(f"Using ReSpeaker device at index {device_index}")
+            self.microphone = sr.Microphone(device_index=device_index)
+        else:
+            self.get_logger().warn("ReSpeaker device not found, using default microphone")
+            self.microphone = sr.Microphone()
         
         # Set microphone to adjust sensitivity automatically as background noise changes
         with self.microphone as source:
-            self.recognizer.adjust_for_ambient_noise(source)
+             self.recognizer.adjust_for_ambient_noise(source)
         
         self.stop_listening = self.recognizer.listen_in_background(
             self.microphone, 
@@ -132,7 +157,11 @@ class SpeechNode(Node):
         
         if self.use_microphone:
             # Restart listening after speaking
-            self.microphone = sr.Microphone()
+            device_index = self.find_respeaker_device()
+            if device_index is not None:
+                self.microphone = sr.Microphone(device_index=device_index)
+            else:
+                self.microphone = sr.Microphone()
             with self.microphone as source:
                 self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
             self.stop_listening = self.recognizer.listen_in_background(
