@@ -11,7 +11,11 @@ def generate_launch_description():
             output='screen',
             parameters=[{
                 'speaker_volume_percent': 35.0,
-                'use_microphone': True
+                'use_microphone': True,
+                'enable_push_to_talk': True,
+                'ptt_button_index': 12,
+                'pause_threshold': 1.5,
+                'phrase_time_limit': 30.0
             }]
         ),
         Node(

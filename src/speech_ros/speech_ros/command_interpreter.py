@@ -31,6 +31,13 @@ class CommandInterpreterNode(Node):
             self.utterances_callback,
             10)
         
+        # Subscriber for PTT utterances (no wake word needed)
+        self.ptt_utterances_subscriber = self.create_subscription(
+            String,
+            'speech/ptt_utterances',
+            self.ptt_utterances_callback,
+            10)
+        
         # Subscriber for diagnostics
         self.diagnostics_subscriber = self.create_subscription(
             DiagnosticArray,
@@ -118,6 +125,12 @@ class CommandInterpreterNode(Node):
             
             self.latest_diagnostics[d.name] = d
     
+    def ptt_utterances_callback(self, utterance_ros):
+        """Process PTT voice commands (no wake word needed)"""
+        request = utterance_ros.data.lower()
+        self.get_logger().info(f"PTT utterance: {request}")
+        self.process_command(request)
+    
     def utterances_callback(self, utterance_ros):
         """Process voice commands"""
         utterance = utterance_ros.data.lower()
@@ -140,6 +153,11 @@ class CommandInterpreterNode(Node):
         
         # Remove wake word to find request
         request = utterance[len(wake_word):].lstrip()
+        self.process_command(request)
+    
+    def process_command(self, request):
+        """Process a command request (after wake word or from PTT)"""
+        self.get_logger().info(f"processing command: {request}")
         
         # # Process different command patterns
         # p = re.compile('.*your name.*', re.IGNORECASE)

@@ -38,6 +38,7 @@
 3. User releases button OR silence detected → Robot plays "thinking" sound
 4. Robot processes command
 5. Robot speaks response
+Note: There are no speech timeouts or wake words required. Speech is recorded and used while button is pressed. Same long phrase timeout applies
 
 **Key Features:**
 - Hold-to-talk mode (button down = listening)
@@ -82,6 +83,7 @@ follow_up_timeout: 15.0       # seconds to wait for follow-up response (when imp
 - [ ] Implement hold-to-talk mode (button down = listening)
 - [ ] Use same audio feedback as speech-activated mode
 - [ ] Add mode selection via ROS parameter (`enable_push_to_talk`)
+
 
 
 ### Phase 2: Core Feedback & Timing

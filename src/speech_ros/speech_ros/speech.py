@@ -25,6 +25,7 @@ import os
 from gtts import gTTS
 
 from std_msgs.msg import String
+from sensor_msgs.msg import Joy
 
 
 class SpeechNode(Node):
@@ -34,11 +35,22 @@ class SpeechNode(Node):
         # Declare parameters
         self.declare_parameter('speaker_volume_percent', 35.0)
         self.declare_parameter('use_microphone', True)
+        self.declare_parameter('enable_push_to_talk', True)
+        self.declare_parameter('ptt_button_index', 12)
+        self.declare_parameter('pause_threshold', 1.5)
+        self.declare_parameter('phrase_time_limit', 30.0)
         
         self.use_microphone = self.get_parameter('use_microphone').value
+        self.enable_push_to_talk = self.get_parameter('enable_push_to_talk').value
+        self.ptt_button_index = self.get_parameter('ptt_button_index').value
+        self.pause_threshold = self.get_parameter('pause_threshold').value
+        self.phrase_time_limit = self.get_parameter('phrase_time_limit').value
         
         # Publisher for utterances
         self.speech_publisher = self.create_publisher(String, '/speech/utterances', 1)
+        
+        # Publisher for PTT utterances (bypass wake word)
+        self.ptt_speech_publisher = self.create_publisher(String, '/speech/ptt_utterances', 1)
         
         # Subscriber for text-to-speech
         self.say_subscriber = self.create_subscription(
@@ -47,10 +59,23 @@ class SpeechNode(Node):
             self.say_callback,
             10)
         
+        # Subscriber for joystick (push-to-talk)
+        if self.enable_push_to_talk:
+            self.joy_subscriber = self.create_subscription(
+                Joy,
+                'joy',
+                self.joy_callback,
+                10)
+            self.get_logger().info(f"Push-to-talk enabled on button {self.ptt_button_index}")
+        
         self.start_time = self.get_clock().now()
         self.stop_listening = None
         self.recognizer = None
         self.microphone = None
+        
+        # State machine for PTT
+        self.state = 'idle'  # idle, listening, processing
+        self.ptt_button_pressed = False
         
         if self.use_microphone:
             self.setup_microphone()
@@ -79,7 +104,7 @@ class SpeechNode(Node):
         # Configure recognizer settings for better sensitivity
         self.recognizer.energy_threshold = 300  # Lower if needed (try 100-200 for quieter environments)
         self.recognizer.dynamic_energy_threshold = True  # Auto-adjust threshold
-        self.recognizer.pause_threshold = 0.8  # Seconds of silence to consider end of phrase
+        self.recognizer.pause_threshold = self.pause_threshold  # Use configured pause threshold
         
         # Find ReSpeaker device
         device_index = self.find_respeaker_device()
@@ -99,13 +124,18 @@ class SpeechNode(Node):
         self.get_logger().info(f"Energy threshold: {self.recognizer.energy_threshold:.1f}")
         self.get_logger().info(f"Dynamic threshold enabled: {self.recognizer.dynamic_energy_threshold}")
         self.get_logger().info(f"Pause threshold: {self.recognizer.pause_threshold}s")
+        self.get_logger().info(f"Phrase time limit: {self.phrase_time_limit}s")
         
-        self.stop_listening = self.recognizer.listen_in_background(
-            self.microphone, 
-            self.listen_callback, 
-            phrase_time_limit=5.0)
-        
-        self.get_logger().info("Listening in the background")
+        # Only start background listening if PTT is disabled
+        if not self.enable_push_to_talk:
+            self.stop_listening = self.recognizer.listen_in_background(
+                self.microphone, 
+                self.listen_callback, 
+                phrase_time_limit=self.phrase_time_limit)
+            
+            self.get_logger().info("Listening in the background (wake word mode)")
+        else:
+            self.get_logger().info("Push-to-talk mode active - waiting for button press")
 
     def play_audio(self, audio_data):
         self.get_logger().info("Playing audio")
@@ -126,6 +156,26 @@ class SpeechNode(Node):
             f.write(audio_data.get_wav_data())
         self.get_logger().info(f"Saved utterance to {filename}")
     
+    def play_sound_file(self, filepath):
+        """Play a sound file using system command"""
+        if os.path.exists(filepath):
+            speaker_volume_percent = self.get_parameter('speaker_volume_percent').value
+            os.system(f"play --no-show-progress --volume {speaker_volume_percent / 100.0} {filepath} 2>/dev/null")
+        else:
+            self.get_logger().warn(f"Sound file not found: {filepath}")
+    
+    def play_start_listening_sound(self):
+        """Play sound when starting to listen"""
+        self.play_sound_file("/root/ros2_ws/media/520579__divoljud__clickglass.wav")
+    
+    def play_thinking_sound(self):
+        """Play sound when processing speech"""
+        self.play_sound_file("/root/ros2_ws/media/826372__charonfaustinus__small-robot-thinking.wav")
+    
+    def play_error_sound(self):
+        """Play sound when nothing was heard"""
+        self.play_sound_file("/root/ros2_ws/media/523426__andersmmg__robot-beep.wav")
+    
     def listen_callback(self, recognizer, audio):
         """Called when audio is detected"""
         try:
@@ -139,6 +189,82 @@ class SpeechNode(Node):
             self.get_logger().info("no words detected")
         except sr.RequestError as e:
             self.get_logger().info(f"Could not request results from Google Speech Recognition service; {e}")
+    
+    def joy_callback(self, joy_msg):
+        """Handle joystick button presses for push-to-talk"""
+        if self.ptt_button_index < len(joy_msg.buttons):
+            button_state = joy_msg.buttons[self.ptt_button_index]
+            
+            # Button pressed (transition from not pressed to pressed)
+            if button_state == 1 and not self.ptt_button_pressed:
+                self.ptt_button_pressed = True
+                if self.state == 'idle':
+                    self.get_logger().info("PTT button pressed - starting to listen")
+                    self.state = 'listening'
+                    self.play_start_listening_sound()
+                    self.start_ptt_listening()
+            
+            # Button released (transition from pressed to not pressed)
+            elif button_state == 0 and self.ptt_button_pressed:
+                self.ptt_button_pressed = False
+                if self.state == 'listening':
+                    self.get_logger().info("PTT button released - stopping listening")
+                    self.stop_ptt_listening()
+    
+    def start_ptt_listening(self):
+        """Start listening for a single phrase in PTT mode"""
+        if not self.recognizer or not self.microphone:
+            self.get_logger().error("Microphone not initialized")
+            return
+        
+        # Use a thread to listen for audio without blocking
+        import threading
+        def listen_thread():
+            try:
+                with self.microphone as source:
+                    self.get_logger().info("Listening for speech...")
+                    # Listen with the configured pause_threshold and phrase_time_limit
+                    audio = self.recognizer.listen(source, 
+                                                   timeout=self.phrase_time_limit,
+                                                   phrase_time_limit=self.phrase_time_limit)
+                
+                # Process the audio
+                if self.state == 'listening':
+                    self.state = 'processing'
+                    self.play_thinking_sound()
+                    
+                self.save_utterance(audio)
+                
+                try:
+                    utterance = self.recognizer.recognize_google(audio)
+                    self.get_logger().info(f'heard: "{utterance}"')
+                    # Publish to PTT topic to bypass wake word check
+                    self.ptt_speech_publisher.publish(String(data=utterance))
+                except sr.UnknownValueError:
+                    self.get_logger().info("no words detected")
+                    self.play_error_sound()
+                except sr.RequestError as e:
+                    self.get_logger().error(f"Recognition error: {e}")
+                    self.play_error_sound()
+                
+            except sr.WaitTimeoutError:
+                self.get_logger().info("Listening timeout - no speech detected")
+                self.play_error_sound()
+            except Exception as e:
+                self.get_logger().error(f"Error during listening: {e}")
+                self.play_error_sound()
+            finally:
+                self.state = 'idle'
+        
+        thread = threading.Thread(target=listen_thread)
+        thread.daemon = True
+        thread.start()
+    
+    def stop_ptt_listening(self):
+        """Stop listening in PTT mode (currently handled by timeout/silence detection)"""
+        # The listening will naturally stop when silence is detected or timeout occurs
+        # This method is here for future enhancements if needed
+        pass
     
     def say(self, text):
         """Convert text to speech and play it"""
@@ -166,7 +292,8 @@ class SpeechNode(Node):
         
         self.say(ros_string.data)
         
-        if self.use_microphone:
+        # Only restart background listening if PTT is disabled
+        if self.use_microphone and not self.enable_push_to_talk:
             # Restart listening after speaking
             device_index = self.find_respeaker_device()
             if device_index is not None:
@@ -179,7 +306,7 @@ class SpeechNode(Node):
             self.stop_listening = self.recognizer.listen_in_background(
                 self.microphone, 
                 self.listen_callback, 
-                phrase_time_limit=5.0)
+                phrase_time_limit=self.phrase_time_limit)
     
     def cleanup(self):
         """Clean up resources"""
