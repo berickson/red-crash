@@ -13,6 +13,7 @@ def generate_launch_description():
                 'speaker_volume_percent': 35.0,
                 'use_microphone': True,
                 'enable_push_to_talk': True,
+                'enable_wake_word': True,
                 'ptt_button_index': 12,
                 'pause_threshold': 1.5,
                 'phrase_time_limit': 30.0

@@ -36,12 +36,14 @@ class SpeechNode(Node):
         self.declare_parameter('speaker_volume_percent', 35.0)
         self.declare_parameter('use_microphone', True)
         self.declare_parameter('enable_push_to_talk', True)
+        self.declare_parameter('enable_wake_word', True)
         self.declare_parameter('ptt_button_index', 12)
         self.declare_parameter('pause_threshold', 1.5)
         self.declare_parameter('phrase_time_limit', 30.0)
         
         self.use_microphone = self.get_parameter('use_microphone').value
         self.enable_push_to_talk = self.get_parameter('enable_push_to_talk').value
+        self.enable_wake_word = self.get_parameter('enable_wake_word').value
         self.ptt_button_index = self.get_parameter('ptt_button_index').value
         self.pause_threshold = self.get_parameter('pause_threshold').value
         self.phrase_time_limit = self.get_parameter('phrase_time_limit').value
@@ -73,8 +75,9 @@ class SpeechNode(Node):
         self.recognizer = None
         self.microphone = None
         
-        # State machine for PTT
-        self.state = 'idle'  # idle, listening, processing
+        # State machine for dual-mode (PTT + wake word)
+        # States: background_listening, ptt_listening, processing, speaking
+        self.state = 'background_listening' if self.enable_wake_word else 'idle'
         self.ptt_button_pressed = False
         
         if self.use_microphone:
@@ -126,16 +129,20 @@ class SpeechNode(Node):
         self.get_logger().info(f"Pause threshold: {self.recognizer.pause_threshold}s")
         self.get_logger().info(f"Phrase time limit: {self.phrase_time_limit}s")
         
-        # Only start background listening if PTT is disabled
-        if not self.enable_push_to_talk:
+        # Start background listening if wake word is enabled
+        if self.enable_wake_word:
             self.stop_listening = self.recognizer.listen_in_background(
                 self.microphone, 
                 self.listen_callback, 
                 phrase_time_limit=self.phrase_time_limit)
             
-            self.get_logger().info("Listening in the background (wake word mode)")
-        else:
-            self.get_logger().info("Push-to-talk mode active - waiting for button press")
+            self.get_logger().info("Background listening enabled for wake word detection")
+        
+        if self.enable_push_to_talk:
+            self.get_logger().info("Push-to-talk mode also active - waiting for button press")
+        
+        if not self.enable_wake_word and not self.enable_push_to_talk:
+            self.get_logger().warn("Neither wake word nor push-to-talk enabled!")
 
     def play_audio(self, audio_data):
         self.get_logger().info("Playing audio")
@@ -198,30 +205,47 @@ class SpeechNode(Node):
             # Button pressed (transition from not pressed to pressed)
             if button_state == 1 and not self.ptt_button_pressed:
                 self.ptt_button_pressed = True
-                if self.state == 'idle':
+                if self.state in ['idle', 'background_listening']:
                     self.get_logger().info("PTT button pressed - starting to listen")
-                    self.state = 'listening'
+                    
+                    # Stop background listening if it's running and wait for it to fully stop
+                    if self.enable_wake_word and self.stop_listening:
+                        self.get_logger().info("Pausing background listening for PTT")
+                        self.stop_listening(wait_for_stop=True)  # Wait for background thread to stop
+                        self.stop_listening = None
+                        # Give the device a moment to be fully released
+                        import time
+                        time.sleep(0.1)
+                    
+                    self.state = 'ptt_listening'
                     self.play_start_listening_sound()
                     self.start_ptt_listening()
             
             # Button released (transition from pressed to not pressed)
             elif button_state == 0 and self.ptt_button_pressed:
                 self.ptt_button_pressed = False
-                if self.state == 'listening':
+                if self.state == 'ptt_listening':
                     self.get_logger().info("PTT button released - stopping listening")
                     self.stop_ptt_listening()
     
     def start_ptt_listening(self):
         """Start listening for a single phrase in PTT mode"""
-        if not self.recognizer or not self.microphone:
-            self.get_logger().error("Microphone not initialized")
+        if not self.recognizer:
+            self.get_logger().error("Recognizer not initialized")
             return
         
         # Use a thread to listen for audio without blocking
         import threading
         def listen_thread():
             try:
-                with self.microphone as source:
+                # Create a new microphone instance for PTT to avoid conflicts
+                device_index = self.find_respeaker_device()
+                if device_index is not None:
+                    ptt_mic = sr.Microphone(device_index=device_index, sample_rate=48000)
+                else:
+                    ptt_mic = sr.Microphone(sample_rate=48000)
+                
+                with ptt_mic as source:
                     self.get_logger().info("Listening for speech...")
                     # Listen with the configured pause_threshold and phrase_time_limit
                     audio = self.recognizer.listen(source, 
@@ -229,7 +253,7 @@ class SpeechNode(Node):
                                                    phrase_time_limit=self.phrase_time_limit)
                 
                 # Process the audio
-                if self.state == 'listening':
+                if self.state == 'ptt_listening':
                     self.state = 'processing'
                     self.play_thinking_sound()
                     
@@ -254,7 +278,19 @@ class SpeechNode(Node):
                 self.get_logger().error(f"Error during listening: {e}")
                 self.play_error_sound()
             finally:
-                self.state = 'idle'
+                # Resume background listening if wake word is enabled
+                if self.enable_wake_word:
+                    # Give the PTT mic a moment to fully close
+                    import time
+                    time.sleep(0.2)
+                    self.get_logger().info("Resuming background listening")
+                    self.stop_listening = self.recognizer.listen_in_background(
+                        self.microphone, 
+                        self.listen_callback, 
+                        phrase_time_limit=self.phrase_time_limit)
+                    self.state = 'background_listening'
+                else:
+                    self.state = 'idle'
         
         thread = threading.Thread(target=listen_thread)
         thread.daemon = True
@@ -292,8 +328,8 @@ class SpeechNode(Node):
         
         self.say(ros_string.data)
         
-        # Only restart background listening if PTT is disabled
-        if self.use_microphone and not self.enable_push_to_talk:
+        # Restart background listening if wake word is enabled
+        if self.use_microphone and self.enable_wake_word:
             # Restart listening after speaking
             device_index = self.find_respeaker_device()
             if device_index is not None:

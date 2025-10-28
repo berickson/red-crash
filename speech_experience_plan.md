@@ -35,7 +35,7 @@
 **Interaction:**
 1. User presses and holds button → Robot plays start sound (listening active)
 2. User speaks while holding button
-3. User releases button OR silence detected → Robot plays "thinking" sound
+3. User releases button → Robot plays "thinking" sound
 4. Robot processes command
 5. Robot speaks response
 Note: There are no speech timeouts or wake words required. Speech is recorded and used while button is pressed. Same long phrase timeout applies
