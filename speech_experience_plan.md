@@ -76,17 +76,20 @@ follow_up_timeout: 15.0       # seconds to wait for follow-up response (when imp
 
 ## Implementation Plan
 
-### Phase 1: Core Feedback & Timing
+
+### Phase 1: Push-to-Talk
+- [ ] Subscribe to joystick button topic
+- [ ] Implement hold-to-talk mode (button down = listening)
+- [ ] Use same audio feedback as speech-activated mode
+- [ ] Add mode selection via ROS parameter (`enable_push_to_talk`)
+
+
+### Phase 2: Core Feedback & Timing
 - [ ] Add audio feedback system with three sounds (start, thinking, error)
 - [ ] Implement configurable silence-based cutoff (`pause_threshold`)
 - [ ] Add configurable `phrase_time_limit` as safety fallback (30-60s)
 - [ ] Add state machine: idle → listening → processing → responding
 
-### Phase 2: Push-to-Talk
-- [ ] Subscribe to joystick button topic
-- [ ] Implement hold-to-talk mode (button down = listening)
-- [ ] Use same audio feedback as speech-activated mode
-- [ ] Add mode selection via ROS parameter (`enable_push_to_talk`)
 
 ### Phase 3: Wake Word Tuning
 - [ ] Log all wake word attempts for analysis
