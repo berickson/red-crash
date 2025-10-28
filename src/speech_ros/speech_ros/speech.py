@@ -63,9 +63,9 @@ class SpeechNode(Node):
         for i in range(p.get_device_count()):
             info = p.get_device_info_by_index(i)
             name = info.get('name', '').lower()
-            # ReSpeaker typically shows up with "respeaker" or "seeed" in the name
-            if 'respeaker' in name or 'seeed' in name:
-                self.get_logger().info(f"Found device: {info.get('name')} at index {i}")
+            # ReSpeaker can show up as "respeaker", "seeed", "minidsp", or "vocalfusion"
+            if any(keyword in name for keyword in ['respeaker', 'seeed', 'minidsp', 'vocalfusion']):
+                self.get_logger().info(f"Found ReSpeaker device: {info.get('name')} at index {i}")
                 p.terminate()
                 return i
         
@@ -76,18 +76,29 @@ class SpeechNode(Node):
         """Initialize microphone and start background listening"""
         self.recognizer = sr.Recognizer()
         
+        # Configure recognizer settings for better sensitivity
+        self.recognizer.energy_threshold = 300  # Lower if needed (try 100-200 for quieter environments)
+        self.recognizer.dynamic_energy_threshold = True  # Auto-adjust threshold
+        self.recognizer.pause_threshold = 0.8  # Seconds of silence to consider end of phrase
+        
         # Find ReSpeaker device
         device_index = self.find_respeaker_device()
         if device_index is not None:
             self.get_logger().info(f"Using ReSpeaker device at index {device_index}")
-            self.microphone = sr.Microphone(device_index=device_index)
+            # Use native 48kHz sample rate for better audio levels
+            self.microphone = sr.Microphone(device_index=device_index, sample_rate=48000)
         else:
             self.get_logger().warn("ReSpeaker device not found, using default microphone")
-            self.microphone = sr.Microphone()
+            self.microphone = sr.Microphone(sample_rate=48000)
         
         # Set microphone to adjust sensitivity automatically as background noise changes
         with self.microphone as source:
-             self.recognizer.adjust_for_ambient_noise(source)
+             self.recognizer.adjust_for_ambient_noise(source, duration=2.0)
+        
+        # Log settings for debugging
+        self.get_logger().info(f"Energy threshold: {self.recognizer.energy_threshold:.1f}")
+        self.get_logger().info(f"Dynamic threshold enabled: {self.recognizer.dynamic_energy_threshold}")
+        self.get_logger().info(f"Pause threshold: {self.recognizer.pause_threshold}s")
         
         self.stop_listening = self.recognizer.listen_in_background(
             self.microphone, 
@@ -109,8 +120,8 @@ class SpeechNode(Node):
     def save_utterance(self, audio_data):
         """Save the audio data to a file for debugging"""
         timestamp = time.strftime("%Y%m%d_%H%M%S")
-        filename = f"/root/ros2_ws/output/audio/utterance_{timestamp}.wav"
-        os.makedirs("/root/ros2_ws/output/audio/", exist_ok=True)
+        filename = f"/root/ros2_ws/output/audio/utterances/utterance_{timestamp}.wav"
+        os.makedirs("/root/ros2_ws/output/audio/utterances/", exist_ok=True)
         with open(filename, 'wb') as f:
             f.write(audio_data.get_wav_data())
         self.get_logger().info(f"Saved utterance to {filename}")
@@ -159,11 +170,12 @@ class SpeechNode(Node):
             # Restart listening after speaking
             device_index = self.find_respeaker_device()
             if device_index is not None:
-                self.microphone = sr.Microphone(device_index=device_index)
+                self.microphone = sr.Microphone(device_index=device_index, sample_rate=48000)
             else:
-                self.microphone = sr.Microphone()
+                self.microphone = sr.Microphone(sample_rate=48000)
             with self.microphone as source:
-                self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
+                self.recognizer.adjust_for_ambient_noise(source, duration=1.0)
+            self.get_logger().info(f"Restarting listening with threshold: {self.recognizer.energy_threshold:.1f}")
             self.stop_listening = self.recognizer.listen_in_background(
                 self.microphone, 
                 self.listen_callback, 
