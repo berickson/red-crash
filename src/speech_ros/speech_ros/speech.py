@@ -119,7 +119,7 @@ class SpeechNode(Node):
         """Called when audio is detected"""
         try:
             self.save_utterance(audio);
-            self.play_audio(audio)
+            # self.play_audio(audio)
             # Use Google Speech Recognition API
             utterance = recognizer.recognize_google(audio)
             self.get_logger().info(f'heard: "{utterance}"')
