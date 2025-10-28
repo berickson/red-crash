@@ -16,6 +16,7 @@ except:
 
 import time
 import speech_recognition as sr
+import contextlib
 
 import rclpy
 from rclpy.node import Node
@@ -28,10 +29,27 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Joy
 
 
+# Context manager to suppress JACK audio warnings
+@contextlib.contextmanager
+def suppress_jack_warnings():
+    """Suppress JACK audio server warnings by redirecting stderr at file descriptor level"""
+    import sys
+    stderr_fd = sys.stderr.fileno()
+    old_stderr_fd = os.dup(stderr_fd)
+    devnull_fd = os.open(os.devnull, os.O_WRONLY)
+    try:
+        os.dup2(devnull_fd, stderr_fd)
+        yield
+    finally:
+        os.dup2(old_stderr_fd, stderr_fd)
+        os.close(devnull_fd)
+        os.close(old_stderr_fd)
+
+
 class SpeechNode(Node):
     def __init__(self):
         super().__init__('speech')
-        
+
         # Declare parameters
         self.declare_parameter('speaker_volume_percent', 35.0)
         self.declare_parameter('use_microphone', True)
@@ -90,7 +108,10 @@ class SpeechNode(Node):
     def find_respeaker_device(self):
         """Find the ReSpeaker microphone device index"""
         import pyaudio
-        p = pyaudio.PyAudio()
+        
+        # Suppress JACK warnings during PyAudio initialization
+        with suppress_jack_warnings():
+            p = pyaudio.PyAudio()
         
         for i in range(p.get_device_count()):
             info = p.get_device_info_by_index(i)
@@ -118,14 +139,17 @@ class SpeechNode(Node):
         if device_index is not None:
             self.get_logger().info(f"Using ReSpeaker device at index {device_index}")
             # Use native 48kHz sample rate for better audio levels
-            self.microphone = sr.Microphone(device_index=device_index, sample_rate=48000)
+            with suppress_jack_warnings():
+                self.microphone = sr.Microphone(device_index=device_index, sample_rate=48000)
         else:
             self.get_logger().warn("ReSpeaker device not found, using default microphone")
-            self.microphone = sr.Microphone(sample_rate=48000)
+            with suppress_jack_warnings():
+                self.microphone = sr.Microphone(sample_rate=48000)
         
         # Set microphone to adjust sensitivity automatically as background noise changes
-        with self.microphone as source:
-             self.recognizer.adjust_for_ambient_noise(source, duration=2.0)
+        with suppress_jack_warnings():
+            with self.microphone as source:
+                self.recognizer.adjust_for_ambient_noise(source, duration=2.0)
         
         # Log settings for debugging
         self.get_logger().info(f"Energy threshold: {self.recognizer.energy_threshold:.1f}")
@@ -255,9 +279,11 @@ class SpeechNode(Node):
                 # Create a new microphone instance for PTT to avoid conflicts
                 device_index = self.find_respeaker_device()
                 if device_index is not None:
-                    ptt_mic = sr.Microphone(device_index=device_index, sample_rate=48000)
+                    with suppress_jack_warnings():
+                        ptt_mic = sr.Microphone(device_index=device_index, sample_rate=48000)
                 else:
-                    ptt_mic = sr.Microphone(sample_rate=48000)
+                    with suppress_jack_warnings():
+                        ptt_mic = sr.Microphone(sample_rate=48000)
                 
                 with ptt_mic as source:
                     self.get_logger().info("Listening for speech (hold button)...")
@@ -370,9 +396,11 @@ class SpeechNode(Node):
             # Restart listening after speaking
             device_index = self.find_respeaker_device()
             if device_index is not None:
-                self.microphone = sr.Microphone(device_index=device_index, sample_rate=48000)
+                with suppress_jack_warnings():
+                    self.microphone = sr.Microphone(device_index=device_index, sample_rate=48000)
             else:
-                self.microphone = sr.Microphone(sample_rate=48000)
+                with suppress_jack_warnings():
+                    self.microphone = sr.Microphone(sample_rate=48000)
             with self.microphone as source:
                 self.recognizer.adjust_for_ambient_noise(source, duration=1.0)
             self.get_logger().info(f"Restarting listening with threshold: {self.recognizer.energy_threshold:.1f}")
