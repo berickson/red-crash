@@ -97,6 +97,7 @@ class CommandInterpreterNode(Node):
         return text_to_num.get(text, float(text))
     
     def diagnostics_callback(self, diagnostic_array):
+        return
         """Handle diagnostic messages and announce status changes"""
         OK = 0
         WARN = 1

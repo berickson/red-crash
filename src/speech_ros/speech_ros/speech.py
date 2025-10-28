@@ -36,7 +36,7 @@ class SpeechNode(Node):
         self.declare_parameter('speaker_volume_percent', 35.0)
         self.declare_parameter('use_microphone', True)
         self.declare_parameter('enable_push_to_talk', True)
-        self.declare_parameter('enable_wake_word', True)
+        self.declare_parameter('enable_wake_word', False)
         self.declare_parameter('ptt_button_index', 12)
         self.declare_parameter('pause_threshold', 1.5)
         self.declare_parameter('phrase_time_limit', 30.0)
@@ -61,6 +61,8 @@ class SpeechNode(Node):
             self.say_callback,
             10)
         
+        # log 
+        
         # Subscriber for joystick (push-to-talk)
         if self.enable_push_to_talk:
             self.joy_subscriber = self.create_subscription(
@@ -79,6 +81,8 @@ class SpeechNode(Node):
         # States: background_listening, ptt_listening, processing, speaking
         self.state = 'background_listening' if self.enable_wake_word else 'idle'
         self.ptt_button_pressed = False
+        self.ptt_stop_flag = False  # Flag to stop PTT listening
+        self.ptt_audio_frames = []  # Buffer for PTT audio
         
         if self.use_microphone:
             self.setup_microphone()
@@ -139,7 +143,7 @@ class SpeechNode(Node):
             self.get_logger().info("Background listening enabled for wake word detection")
         
         if self.enable_push_to_talk:
-            self.get_logger().info("Push-to-talk mode also active - waiting for button press")
+            self.get_logger().info("Push-to-talk active - waiting for button press")
         
         if not self.enable_wake_word and not self.enable_push_to_talk:
             self.get_logger().warn("Neither wake word nor push-to-talk enabled!")
@@ -167,13 +171,15 @@ class SpeechNode(Node):
         """Play a sound file using system command"""
         if os.path.exists(filepath):
             speaker_volume_percent = self.get_parameter('speaker_volume_percent').value
+            self.get_logger().info(f"Playing sound: {filepath} at volume {speaker_volume_percent}%")
             os.system(f"play --no-show-progress --volume {speaker_volume_percent / 100.0} {filepath} 2>/dev/null")
         else:
             self.get_logger().warn(f"Sound file not found: {filepath}")
     
     def play_start_listening_sound(self):
         """Play sound when starting to listen"""
-        self.play_sound_file("/root/ros2_ws/media/520579__divoljud__clickglass.wav")
+        # self.play_sound_file("/root/ros2_ws/media/520579__divoljud__clickglass.wav")
+        self.play_sound_file("/root/ros2_ws/media/826372__charonfaustinus__small-robot-thinking.wav")
     
     def play_thinking_sound(self):
         """Play sound when processing speech"""
@@ -201,6 +207,10 @@ class SpeechNode(Node):
         """Handle joystick button presses for push-to-talk"""
         if self.ptt_button_index < len(joy_msg.buttons):
             button_state = joy_msg.buttons[self.ptt_button_index]
+            if button_state != self.ptt_button_pressed:
+                self.get_logger().info(f"PTT Button state: {button_state}") 
+            else:
+                return
             
             # Button pressed (transition from not pressed to pressed)
             if button_state == 1 and not self.ptt_button_pressed:
@@ -214,8 +224,8 @@ class SpeechNode(Node):
                         self.stop_listening(wait_for_stop=True)  # Wait for background thread to stop
                         self.stop_listening = None
                         # Give the device a moment to be fully released
-                        import time
-                        time.sleep(0.1)
+                        # import time
+                        # time.sleep(0.1)
                     
                     self.state = 'ptt_listening'
                     self.play_start_listening_sound()
@@ -226,13 +236,17 @@ class SpeechNode(Node):
                 self.ptt_button_pressed = False
                 if self.state == 'ptt_listening':
                     self.get_logger().info("PTT button released - stopping listening")
-                    self.stop_ptt_listening()
+                    self.ptt_stop_flag = True  # Signal the PTT thread to stop
     
     def start_ptt_listening(self):
         """Start listening for a single phrase in PTT mode"""
         if not self.recognizer:
             self.get_logger().error("Recognizer not initialized")
             return
+        
+        # Reset stop flag and audio buffer
+        self.ptt_stop_flag = False
+        self.ptt_audio_frames = []
         
         # Use a thread to listen for audio without blocking
         import threading
@@ -246,34 +260,63 @@ class SpeechNode(Node):
                     ptt_mic = sr.Microphone(sample_rate=48000)
                 
                 with ptt_mic as source:
-                    self.get_logger().info("Listening for speech...")
-                    # Listen with the configured pause_threshold and phrase_time_limit
-                    audio = self.recognizer.listen(source, 
-                                                   timeout=self.phrase_time_limit,
-                                                   phrase_time_limit=self.phrase_time_limit)
+                    self.get_logger().info("Listening for speech (hold button)...")
+                    
+                    # Continuously record while button is held
+                    while not self.ptt_stop_flag and self.state == 'ptt_listening':
+                        # Read audio in small chunks
+                        try:
+                            audio_chunk = source.stream.read(source.CHUNK)
+                            self.ptt_audio_frames.append(audio_chunk)
+                        except Exception as e:
+                            self.get_logger().error(f"Error reading audio: {e}")
+                            break
+                    
+                    self.get_logger().info(f"Button released (flag={self.ptt_stop_flag}), processing audio...")
+                    
+                    # Convert the collected frames to AudioData
+                    if self.ptt_audio_frames:
+                        import io
+                        import wave
+                        audio_data = b''.join(self.ptt_audio_frames)
+                        
+                        # Create a WAV file in memory
+                        wav_io = io.BytesIO()
+                        with wave.open(wav_io, 'wb') as wav_file:
+                            wav_file.setnchannels(1)
+                            wav_file.setsampwidth(2)  # 16-bit
+                            wav_file.setframerate(source.SAMPLE_RATE)
+                            wav_file.writeframes(audio_data)
+                        
+                        wav_io.seek(0)
+                        
+                        # Create AudioData object
+                        audio = sr.AudioData(audio_data, source.SAMPLE_RATE, 2)
+                    else:
+                        self.get_logger().warn("No audio recorded")
+                        audio = None
                 
                 # Process the audio
-                if self.state == 'ptt_listening':
+                if audio and self.state == 'ptt_listening':
                     self.state = 'processing'
                     self.play_thinking_sound()
                     
-                self.save_utterance(audio)
-                
-                try:
-                    utterance = self.recognizer.recognize_google(audio)
-                    self.get_logger().info(f'heard: "{utterance}"')
-                    # Publish to PTT topic to bypass wake word check
-                    self.ptt_speech_publisher.publish(String(data=utterance))
-                except sr.UnknownValueError:
-                    self.get_logger().info("no words detected")
+                    self.save_utterance(audio)
+                    
+                    try:
+                        utterance = self.recognizer.recognize_google(audio)
+                        self.get_logger().info(f'heard: "{utterance}"')
+                        # Publish to PTT topic to bypass wake word check
+                        self.ptt_speech_publisher.publish(String(data=utterance))
+                    except sr.UnknownValueError:
+                        self.get_logger().info("no words detected")
+                        self.play_error_sound()
+                    except sr.RequestError as e:
+                        self.get_logger().error(f"Recognition error: {e}")
+                        self.play_error_sound()
+                elif not audio:
                     self.play_error_sound()
-                except sr.RequestError as e:
-                    self.get_logger().error(f"Recognition error: {e}")
-                    self.play_error_sound()
                 
-            except sr.WaitTimeoutError:
-                self.get_logger().info("Listening timeout - no speech detected")
-                self.play_error_sound()
             except Exception as e:
                 self.get_logger().error(f"Error during listening: {e}")
                 self.play_error_sound()
@@ -295,12 +338,6 @@ class SpeechNode(Node):
         thread = threading.Thread(target=listen_thread)
         thread.daemon = True
         thread.start()
-    
-    def stop_ptt_listening(self):
-        """Stop listening in PTT mode (currently handled by timeout/silence detection)"""
-        # The listening will naturally stop when silence is detected or timeout occurs
-        # This method is here for future enhancements if needed
-        pass
     
     def say(self, text):
         """Convert text to speech and play it"""

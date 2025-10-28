@@ -10,10 +10,10 @@ def generate_launch_description():
             name='speech',
             output='screen',
             parameters=[{
-                'speaker_volume_percent': 35.0,
+                'speaker_volume_percent': 65.0,
                 'use_microphone': True,
                 'enable_push_to_talk': True,
-                'enable_wake_word': True,
+                'enable_wake_word': False,
                 'ptt_button_index': 12,
                 'pause_threshold': 1.5,
                 'phrase_time_limit': 30.0
