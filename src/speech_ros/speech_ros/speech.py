@@ -17,6 +17,8 @@ except:
 import time
 import speech_recognition as sr
 import contextlib
+import queue
+import threading
 
 import rclpy
 from rclpy.node import Node
@@ -95,6 +97,13 @@ class SpeechNode(Node):
         self.recognizer = None
         self.microphone = None
         
+        # Task queue for worker thread (holds callables)
+        # Audio operations run in worker thread to keep ROS2 callbacks responsive
+        # This allows parameter queries and other ROS2 services to work during audio operations
+        self.task_queue = queue.Queue()
+        self.worker_running = True
+        self.state_lock = threading.Lock()
+        
         # State machine for dual-mode (PTT + wake word)
         # States: background_listening, ptt_listening, processing, speaking
         self.state = 'background_listening' if self.enable_wake_word else 'idle'
@@ -102,16 +111,60 @@ class SpeechNode(Node):
         self.ptt_stop_flag = False  # Flag to stop PTT listening
         self.ptt_audio_frames = []  # Buffer for PTT audio
         
+        # Start worker thread for audio operations
+        self.worker_thread = threading.Thread(target=self._worker_loop, daemon=True)
+        self.worker_thread.start()
+        
         if self.use_microphone:
-            self.setup_microphone()
+            # Queue microphone setup to run asynchronously (keeps node startup fast)
+            self.task_queue.put(self._do_setup_microphone)
+    
+    def _worker_loop(self):
+        """Main loop for worker thread - processes tasks
+        
+        All blocking audio operations run here to keep ROS2 callbacks responsive.
+        This ensures parameter queries, service calls, etc. work during audio playback.
+        """
+        self.get_logger().info("Worker thread started")
+        while self.worker_running:
+            try:
+                # Wait for tasks with a timeout to allow checking worker_running
+                task = self.task_queue.get(timeout=0.1)
+                
+                if task is None:  # Shutdown signal
+                    break
+                
+                # Task is a callable - just call it
+                task()
+                
+                self.task_queue.task_done()
+            except queue.Empty:
+                continue
+            except Exception as e:
+                self.get_logger().error(f"Error in worker thread: {e}")
+        
+        self.get_logger().info("Worker thread stopped")
+    
+    def _get_state(self):
+        """Thread-safe state getter"""
+        with self.state_lock:
+            return self.state
+    
+    def _set_state(self, new_state):
+        """Thread-safe state setter"""
+        with self.state_lock:
+            old_state = self.state
+            self.state = new_state
+            if old_state != new_state:
+                self.get_logger().info(f"State transition: {old_state} -> {new_state}")
+
     
     def find_respeaker_device(self):
         """Find the ReSpeaker microphone device index"""
         import pyaudio
         
         # Suppress JACK warnings during PyAudio initialization
-        with suppress_jack_warnings():
-            p = pyaudio.PyAudio()
+        p = pyaudio.PyAudio()
         
         for i in range(p.get_device_count()):
             info = p.get_device_info_by_index(i)
@@ -125,8 +178,9 @@ class SpeechNode(Node):
         p.terminate()
         return None
     
-    def setup_microphone(self):
-        """Initialize microphone and start background listening"""
+    def _do_setup_microphone(self):
+        """Initialize microphone and start background listening (runs in worker thread)"""
+        self.get_logger().info("Initializing microphone...")
         self.recognizer = sr.Recognizer()
         
         # Configure recognizer settings for better sensitivity
@@ -164,17 +218,22 @@ class SpeechNode(Node):
                 self.listen_callback, 
                 phrase_time_limit=self.phrase_time_limit)
             
+            self._set_state('background_listening')
             self.get_logger().info("Background listening enabled for wake word detection")
+        else:
+            self._set_state('idle')
         
         if self.enable_push_to_talk:
             self.get_logger().info("Push-to-talk active - waiting for button press")
         
         if not self.enable_wake_word and not self.enable_push_to_talk:
             self.get_logger().warn("Neither wake word nor push-to-talk enabled!")
+        
+        self.get_logger().info("Microphone initialization complete")
 
-    def play_audio(self, audio_data):
+    def _do_play_audio(self, audio_data):
+        """Play audio data using system command (runs in worker thread)"""
         self.get_logger().info("Playing audio")
-        """Play audio data using system command"""
         with open('temp_audio.wav', 'wb') as f:
             f.write(audio_data.get_wav_data())
         
@@ -191,8 +250,8 @@ class SpeechNode(Node):
             f.write(audio_data.get_wav_data())
         self.get_logger().info(f"Saved utterance to {filename}")
     
-    def play_sound_file(self, filepath):
-        """Play a sound file using system command"""
+    def _do_play_sound_file(self, filepath):
+        """Play a sound file using system command (runs in worker thread)"""
         if os.path.exists(filepath):
             speaker_volume_percent = self.get_parameter('speaker_volume_percent').value
             self.get_logger().info(f"Playing sound: {filepath} at volume {speaker_volume_percent}%")
@@ -201,17 +260,19 @@ class SpeechNode(Node):
             self.get_logger().warn(f"Sound file not found: {filepath}")
     
     def play_start_listening_sound(self):
-        """Play sound when starting to listen"""
-        # self.play_sound_file("/root/ros2_ws/media/520579__divoljud__clickglass.wav")
-        self.play_sound_file("/root/ros2_ws/media/826372__charonfaustinus__small-robot-thinking.wav")
+        """Play sound when starting to listen (queued to worker thread to avoid blocking)"""
+        filepath = "/root/ros2_ws/media/826372__charonfaustinus__small-robot-thinking.wav"
+        self.task_queue.put(lambda: self._do_play_sound_file(filepath))
     
     def play_thinking_sound(self):
-        """Play sound when processing speech"""
-        self.play_sound_file("/root/ros2_ws/media/826372__charonfaustinus__small-robot-thinking.wav")
+        """Play sound when processing speech (queued to worker thread to avoid blocking)"""
+        filepath = "/root/ros2_ws/media/826372__charonfaustinus__small-robot-thinking.wav"
+        self.task_queue.put(lambda: self._do_play_sound_file(filepath))
     
     def play_error_sound(self):
-        """Play sound when nothing was heard"""
-        self.play_sound_file("/root/ros2_ws/media/523426__andersmmg__robot-beep.wav")
+        """Play sound when nothing was heard (queued to worker thread to avoid blocking)"""
+        filepath = "/root/ros2_ws/media/523426__andersmmg__robot-beep.wav"
+        self.task_queue.put(lambda: self._do_play_sound_file(filepath))
     
     def listen_callback(self, recognizer, audio):
         """Called when audio is detected"""
@@ -228,7 +289,10 @@ class SpeechNode(Node):
             self.get_logger().info(f"Could not request results from Google Speech Recognition service; {e}")
     
     def joy_callback(self, joy_msg):
-        """Handle joystick button presses for push-to-talk"""
+        """Handle joystick button presses for push-to-talk (non-blocking)
+        
+        Queues tasks to worker thread instead of blocking - keeps ROS2 responsive.
+        """
         if self.ptt_button_index < len(joy_msg.buttons):
             button_state = joy_msg.buttons[self.ptt_button_index]
             if button_state != self.ptt_button_pressed:
@@ -239,31 +303,42 @@ class SpeechNode(Node):
             # Button pressed (transition from not pressed to pressed)
             if button_state == 1 and not self.ptt_button_pressed:
                 self.ptt_button_pressed = True
-                if self.state in ['idle', 'background_listening']:
-                    self.get_logger().info("PTT button pressed - starting to listen")
-                    
-                    # Stop background listening if it's running and wait for it to fully stop
-                    if self.enable_wake_word and self.stop_listening:
-                        self.get_logger().info("Pausing background listening for PTT")
-                        self.stop_listening(wait_for_stop=True)  # Wait for background thread to stop
-                        self.stop_listening = None
-                        # Give the device a moment to be fully released
-                        # import time
-                        # time.sleep(0.1)
-                    
-                    self.state = 'ptt_listening'
-                    self.play_start_listening_sound()
-                    self.start_ptt_listening()
+                current_state = self._get_state()
+                if current_state in ['idle', 'background_listening']:
+                    self.get_logger().info("PTT button pressed - queueing start")
+                    self.task_queue.put(self._do_ptt_start)
             
             # Button released (transition from pressed to not pressed)
             elif button_state == 0 and self.ptt_button_pressed:
                 self.ptt_button_pressed = False
-                if self.state == 'ptt_listening':
-                    self.get_logger().info("PTT button released - stopping listening")
-                    self.ptt_stop_flag = True  # Signal the PTT thread to stop
+                current_state = self._get_state()
+                if current_state == 'ptt_listening':
+                    self.get_logger().info("PTT button released - queueing stop")
+                    self.task_queue.put(self._do_ptt_stop)
     
-    def start_ptt_listening(self):
-        """Start listening for a single phrase in PTT mode"""
+    def _do_ptt_start(self):
+        """Start PTT listening (runs in worker thread)"""
+        self.get_logger().info("Starting PTT listening")
+        
+        # Stop background listening if it's running
+        if self.enable_wake_word and self.stop_listening:
+            self.get_logger().info("Pausing background listening for PTT")
+            self.stop_listening(wait_for_stop=True)
+            self.stop_listening = None
+        
+        self._set_state('ptt_listening')
+        self._do_play_sound_file("/root/ros2_ws/media/826372__charonfaustinus__small-robot-thinking.wav")
+        
+        # Now start the PTT listening in a separate thread
+        self._start_ptt_listening()
+    
+    def _do_ptt_stop(self):
+        """Stop PTT listening (runs in worker thread)"""
+        self.get_logger().info("Stopping PTT listening")
+        self.ptt_stop_flag = True
+    
+    def _start_ptt_listening(self):
+        """Start listening for a single phrase in PTT mode (spawns a thread)"""
         if not self.recognizer:
             self.get_logger().error("Recognizer not initialized")
             return
@@ -289,7 +364,7 @@ class SpeechNode(Node):
                     self.get_logger().info("Listening for speech (hold button)...")
                     
                     # Continuously record while button is held
-                    while not self.ptt_stop_flag and self.state == 'ptt_listening':
+                    while not self.ptt_stop_flag and self._get_state() == 'ptt_listening':
                         # Read audio in small chunks
                         try:
                             audio_chunk = source.stream.read(source.CHUNK)
@@ -323,9 +398,9 @@ class SpeechNode(Node):
                         audio = None
                 
                 # Process the audio
-                if audio and self.state == 'ptt_listening':
-                    self.state = 'processing'
-                    self.play_thinking_sound()
+                if audio and self._get_state() == 'ptt_listening':
+                    self._set_state('processing')
+                    self._do_play_sound_file("/root/ros2_ws/media/826372__charonfaustinus__small-robot-thinking.wav")
                     
                     self.save_utterance(audio)
                     
@@ -336,16 +411,16 @@ class SpeechNode(Node):
                         self.ptt_speech_publisher.publish(String(data=utterance))
                     except sr.UnknownValueError:
                         self.get_logger().info("no words detected")
-                        self.play_error_sound()
+                        self._do_play_sound_file("/root/ros2_ws/media/523426__andersmmg__robot-beep.wav")
                     except sr.RequestError as e:
                         self.get_logger().error(f"Recognition error: {e}")
-                        self.play_error_sound()
+                        self._do_play_sound_file("/root/ros2_ws/media/523426__andersmmg__robot-beep.wav")
                 elif not audio:
-                    self.play_error_sound()
+                    self._do_play_sound_file("/root/ros2_ws/media/523426__andersmmg__robot-beep.wav")
                 
             except Exception as e:
                 self.get_logger().error(f"Error during listening: {e}")
-                self.play_error_sound()
+                self._do_play_sound_file("/root/ros2_ws/media/523426__andersmmg__robot-beep.wav")
             finally:
                 # Resume background listening if wake word is enabled
                 if self.enable_wake_word:
@@ -357,42 +432,35 @@ class SpeechNode(Node):
                         self.microphone, 
                         self.listen_callback, 
                         phrase_time_limit=self.phrase_time_limit)
-                    self.state = 'background_listening'
+                    self._set_state('background_listening')
                 else:
-                    self.state = 'idle'
+                    self._set_state('idle')
         
-        thread = threading.Thread(target=listen_thread)
-        thread.daemon = True
+        thread = threading.Thread(target=listen_thread, daemon=True)
         thread.start()
     
-    def say(self, text):
-        """Convert text to speech and play it"""
-        self.get_logger().info(f'saying "{text}"')
+    def _do_say(self, text):
+        """Convert text to speech and play it (runs in worker thread)"""
+        # Stop background listening if it's running
+        if self.enable_wake_word and self.stop_listening:
+            self.get_logger().info("Pausing background listening for speech")
+            self.stop_listening(wait_for_stop=True)
+            self.stop_listening = None
+        
+        self._set_state('speaking')
+        
+        speaker_volume_percent = self.get_parameter('speaker_volume_percent').value
+        self.get_logger().info(f'saying "{text}" at {speaker_volume_percent}%')
         
         tts = gTTS("uh " + text)
         tts.save('out.mp3')
         self.get_logger().info('mp3 done')
         
-        speaker_volume_percent = self.get_parameter('speaker_volume_percent').value
         os.system(f"play --no-show-progress --volume {speaker_volume_percent / 100.0} out.mp3 2>/dev/null")
         os.system("rm out.mp3")
-    
-    def say_callback(self, ros_string):
-        """Handle incoming text-to-speech requests"""
-        # Ignore messages from before we started
-        elapsed = self.get_clock().now() - self.start_time
-        if elapsed < Duration(seconds=1.0):
-            self.get_logger().info("Ignoring old message")
-            return
-        
-        if self.use_microphone and self.stop_listening:
-            # Stop listening while speaking
-            self.stop_listening(wait_for_stop=True)
-        
-        self.say(ros_string.data)
         
         # Restart background listening if wake word is enabled
-        if self.use_microphone and self.enable_wake_word:
+        if self.enable_wake_word:
             # Restart listening after speaking
             device_index = self.find_respeaker_device()
             if device_index is not None:
@@ -408,9 +476,36 @@ class SpeechNode(Node):
                 self.microphone, 
                 self.listen_callback, 
                 phrase_time_limit=self.phrase_time_limit)
+            self._set_state('background_listening')
+        else:
+            self._set_state('idle')
+    
+    def say_callback(self, ros_string):
+        """Handle incoming text-to-speech requests (non-blocking)
+        
+        Queues TTS to worker thread instead of blocking - keeps ROS2 responsive.
+        """
+        # Ignore messages from before we started
+        elapsed = self.get_clock().now() - self.start_time
+        if elapsed < Duration(seconds=1.0):
+            self.get_logger().info("Ignoring old message")
+            return
+        
+        # Queue the speech task - pass the string directly
+        self.get_logger().info(f"Queueing TTS: {ros_string.data}")
+        self.task_queue.put(lambda: self._do_say(ros_string.data))
     
     def cleanup(self):
         """Clean up resources"""
+        self.get_logger().info("Cleaning up speech node")
+        
+        # Stop worker thread
+        self.worker_running = False
+        self.task_queue.put(None)  # Shutdown signal
+        if self.worker_thread.is_alive():
+            self.worker_thread.join(timeout=2.0)
+        
+        # Stop background listening
         if self.stop_listening:
             self.stop_listening(wait_for_stop=False)
 
