@@ -17,7 +17,7 @@ def generate_launch_description():
                 'ptt_button_index': 12,
                 'pause_threshold': 1.5,
                 'phrase_time_limit': 30.0,
-                'speaker_id': 65,
+                'speaker_id': 61,
                 'length_scale': 1.0,
                 'noise_scale': 0.667,
                 'noise_w_scale': 0.8
