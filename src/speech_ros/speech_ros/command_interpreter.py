@@ -6,6 +6,8 @@ import time
 import re
 import random
 import os
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from std_msgs.msg import String
 from diagnostic_msgs.msg import DiagnosticArray
@@ -76,7 +78,7 @@ class CommandInterpreterNode(Node):
             response = self.openai_client.chat.completions.create(
                 model="gpt-4.1",  
                 messages=[
-                    {"role": "system", "content": "You are Red Crash, a friendly autonomous robot with six wheels and a plastic pumpkin head filled with candy. Keep responses brief and conversational (1-2 sentences). You have a playful personality."},
+                    {"role": "system", "content": f"You are Ivy the Halloween pumpkin robot, a friendly autonomous robot with six wheels and a plastic pumpkin head filled with candy. Today is {datetime.now(ZoneInfo('America/Los_Angeles')).strftime('%A, %B %d, %Y at %I:%M %p Pacific')}. You were built by the genius Brian Erickson. Keep responses brief and conversational (1-2 sentences). You have a playful personality. Optimize output for use with piper text to speech"},
                     {"role": "user", "content": question}
                 ],
                 max_tokens=100,
