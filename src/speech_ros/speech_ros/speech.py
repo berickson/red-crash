@@ -19,13 +19,17 @@ import speech_recognition as sr
 import contextlib
 import queue
 import threading
+import wave
+import numpy as np
 
 import rclpy
 from rclpy.node import Node
 from rclpy.duration import Duration
 import os
 
-from gtts import gTTS
+from piper.voice import PiperVoice
+from piper.config import SynthesisConfig
+from ament_index_python.packages import get_package_share_directory
 
 from std_msgs.msg import String
 from sensor_msgs.msg import Joy
@@ -60,6 +64,10 @@ class SpeechNode(Node):
         self.declare_parameter('ptt_button_index', 12)
         self.declare_parameter('pause_threshold', 1.5)
         self.declare_parameter('phrase_time_limit', 30.0)
+        self.declare_parameter('speaker_id', 65)
+        self.declare_parameter('length_scale', 1.0)
+        self.declare_parameter('noise_scale', 0.667)
+        self.declare_parameter('noise_w_scale', 0.8)
         
         self.use_microphone = self.get_parameter('use_microphone').value
         self.enable_push_to_talk = self.get_parameter('enable_push_to_talk').value
@@ -67,6 +75,20 @@ class SpeechNode(Node):
         self.ptt_button_index = self.get_parameter('ptt_button_index').value
         self.pause_threshold = self.get_parameter('pause_threshold').value
         self.phrase_time_limit = self.get_parameter('phrase_time_limit').value
+        
+        # Load Piper TTS voice model
+        package_share_directory = get_package_share_directory('speech_ros')
+        voices_dir = os.path.join(package_share_directory, 'voices')
+        self.model_path = os.path.join(voices_dir, 'en_US-libritts_r-medium.onnx')
+        self.config_path = os.path.join(voices_dir, 'en_US-libritts_r-medium.onnx.json')
+        
+        self.get_logger().info(f"Loading Piper TTS voice from {self.model_path}")
+        try:
+            self.voice = PiperVoice.load(self.model_path, self.config_path, use_cuda=False)
+            self.get_logger().info("Piper TTS voice loaded successfully")
+        except Exception as e:
+            self.get_logger().error(f"Failed to load Piper TTS voice: {e}")
+            raise
         
         # Publisher for utterances
         self.speech_publisher = self.create_publisher(String, '/speech/utterances', 1)
@@ -450,14 +472,50 @@ class SpeechNode(Node):
         self._set_state('speaking')
         
         speaker_volume_percent = self.get_parameter('speaker_volume_percent').value
-        self.get_logger().info(f'saying "{text}" at {speaker_volume_percent}%')
+        speaker_id = self.get_parameter('speaker_id').value
+        length_scale = self.get_parameter('length_scale').value
+        noise_scale = self.get_parameter('noise_scale').value
+        noise_w_scale = self.get_parameter('noise_w_scale').value
         
-        tts = gTTS("uh " + text)
-        tts.save('out.mp3')
-        self.get_logger().info('mp3 done')
+        self.get_logger().info(f'saying "{text}" at {speaker_volume_percent}% (speaker_id={speaker_id})')
         
-        os.system(f"play --no-show-progress --volume {speaker_volume_percent / 100.0} out.mp3 2>/dev/null")
-        os.system("rm out.mp3")
+        try:
+            # Create synthesis config
+            syn_config = SynthesisConfig(
+                speaker_id=speaker_id,
+                length_scale=length_scale,
+                noise_scale=noise_scale,
+                noise_w_scale=noise_w_scale,
+            )
+            
+            # Synthesize audio to memory
+            audio_chunks = []
+            for audio_chunk in self.voice.synthesize(text, syn_config):
+                audio_chunks.append(audio_chunk.audio_int16_array)
+            
+            if not audio_chunks:
+                self.get_logger().error("No audio generated")
+                return
+            
+            # Concatenate all audio chunks
+            full_audio = np.concatenate(audio_chunks)
+            
+            # Write to temporary WAV file
+            wav_path = '/tmp/piper_tts_output.wav'
+            with wave.open(wav_path, 'wb') as wav_file:
+                wav_file.setnchannels(1)  # Mono
+                wav_file.setsampwidth(2)  # 16-bit
+                wav_file.setframerate(self.voice.config.sample_rate)
+                wav_file.writeframes(full_audio.tobytes())
+            
+            # Play using sox (reliable method that we know works)
+            os.system(f"play --no-show-progress --volume {speaker_volume_percent / 100.0} {wav_path} 2>/dev/null")
+            os.remove(wav_path)
+            
+            self.get_logger().info('Speech synthesis complete')
+            
+        except Exception as e:
+            self.get_logger().error(f"Error during speech synthesis: {e}")
         
         # Restart background listening if wake word is enabled
         if self.enable_wake_word:

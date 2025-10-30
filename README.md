@@ -2,6 +2,19 @@
 
 This is the ROS2 Jazzy workspace for the red-crash robotics project.
 
+## Prerequisites
+
+Install Git LFS (required for voice model files):
+```bash
+sudo apt-get install git-lfs
+git lfs install
+```
+
+Then clone normally - LFS files will be downloaded automatically:
+```bash
+git clone https://github.com/berickson/red-crash.git
+```
+
 ## Quick Start
 
 ### 1. Build the Docker Image

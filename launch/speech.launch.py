@@ -16,7 +16,11 @@ def generate_launch_description():
                 'enable_wake_word': False,
                 'ptt_button_index': 12,
                 'pause_threshold': 1.5,
-                'phrase_time_limit': 30.0
+                'phrase_time_limit': 30.0,
+                'speaker_id': 65,
+                'length_scale': 1.0,
+                'noise_scale': 0.667,
+                'noise_w_scale': 0.8
             }]
         ),
         Node(

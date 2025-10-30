@@ -14,6 +14,8 @@ setup(
         ('share/' + package_name, ['package.xml']),
         # Install secrets folder structure
         ('share/' + package_name + '/secrets', ['secrets/README.md', 'secrets/.gitignore']),
+        # Install voice models for Piper TTS
+        ('share/' + package_name + '/voices', glob('voices/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

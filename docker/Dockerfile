@@ -56,6 +56,11 @@ RUN apt-get update && apt-get install -y \
   python3-requests \
   && rm -rf /var/lib/apt/lists/*
 
+# Install espeak-ng for phonemization (required by piper)
+RUN apt-get update && apt-get install -y \
+  espeak-ng \
+  && rm -rf /var/lib/apt/lists/*
+
 # Install Python packages that aren't available via apt (using --break-system-packages for container)
 RUN python3 -m pip install --break-system-packages \
   psutil \
@@ -65,6 +70,11 @@ RUN python3 -m pip install --break-system-packages \
   depthai \
   depthai-pipeline-graph \
   openai
+
+# Install piper-tts (includes embedded espeak-ng for phonemization) and sounddevice
+RUN python3 -m pip install --break-system-packages \
+  piper-tts \
+  sounddevice
 
 # Install DepthAI for ROS2 (official driver)
 RUN apt-get update && apt-get install -y \
