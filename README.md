@@ -110,11 +110,16 @@ index (files in `src/joy_soundboard_ros/sounds/`, named
 | R1 | 10 | Says "You can take a candy from my head" |
 | D-pad Up | 11 | Says "Happy Halloween" |
 | D-pad Down | 12 | Push-to-talk |
-| D-pad Left | 13 | — |
+| D-pad Left | 13 | Takes a photo and compliments any costumes in it |
 | D-pad Right | 14 | Says "You have taken the forbidden candy" |
 | Star | 15 | — |
 
-D-pad Left (13) and Star (15) are free for new clips.
+Star (15) is free for new clips. D-pad Left (13) is used by the
+`costume_compliment` node (started by `launch/speech.launch.py`): it grabs the
+latest frame from `/oak/rgb/image_raw`, sends it to OpenAI, and says something
+nice about any costumes it sees. It needs the OAK-D running and
+`OPENAI_API_KEY` set. Every photo is saved to `output/photos/` (set
+`save_photos: false` in the launch file to stop saving them).
 
 In S/X mode the controller acts like a Nintendo Switch Pro Controller, which
 has no extra buttons, so L4, R4, PL, PR and Profile never appear in `/joy`.

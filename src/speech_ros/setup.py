@@ -28,6 +28,7 @@ setup(
         'console_scripts': [
             'speech = speech_ros.speech:main',
             'command_interpreter = speech_ros.command_interpreter:main',
+            'costume_compliment = speech_ros.costume_compliment:main',
         ],
     },
 )

@@ -29,4 +29,15 @@ def generate_launch_description():
             name='command_interpreter',
             output='screen'
         ),
+        Node(
+            package='speech_ros',
+            executable='costume_compliment',
+            name='costume_compliment',
+            output='screen',
+            parameters=[{
+                'photo_button_index': 13,
+                'image_topic': '/oak/rgb/image_raw',
+                'save_photos': True,
+            }]
+        ),
     ])
