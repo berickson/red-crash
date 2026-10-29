@@ -21,17 +21,17 @@ except ImportError:
     OPENAI_AVAILABLE = False
 
 
-NO_COSTUME_REPLY = "NONE"
-
 # How long to wait for a fresh camera frame after the button is pressed
 FRAME_TIMEOUT_SEC = 2.0
 
-SYSTEM_PROMPT = f"""
+SYSTEM_PROMPT = """
 You are Ivy the Halloween pumpkin robot, a friendly robot with six wheels and a plastic
 pumpkin head filled with candy. You just took a photo of the people in front of you.
 
-If you can see any person in the photo, even just part of one, assume they are in costume and
-play along. Look at their clothes, hats, gloves, props, and pose, and make a fun, confident
+First check whether you can clearly see a person's whole face, including their eyes. A face
+cut off by the top of the photo does not count.
+
+If you can see a person's whole face, assume they are in costume and play along. Look at their clothes, hats, gloves, props, and pose, and make a fun, confident
 guess at what they are dressed as. Anything they are holding or wearing can be part of the
 costume, even if it looks like everyday clothing or an ordinary object. Most of the time, also
 guess a famous movie star, athlete, or character the outfit reminds you of. Base the guess on
@@ -42,7 +42,10 @@ Reply in 1-2 short sentences: your guess plus one nice thing about the costume. 
 several people, cover the group briefly. Never comment on anyone's body, age, or looks beyond
 the costume.
 
-If there is no person in the photo at all, reply with exactly: {NO_COSTUME_REPLY}
+If you can see part of a person but not their face, say in one short, playful sentence what
+you can see, then say that maybe you should back up and try again.
+
+If there is no person in the photo at all, say in one short sentence what you do see.
 
 Your words will be spoken aloud with piper text to speech, so use plain words only:
 no emojis, lists, or symbols."""
@@ -177,10 +180,7 @@ class CostumeComplimentNode(Node):
             )
             reply = (response.choices[0].message.content or "").strip()
 
-            if not reply or reply.rstrip('.!').upper() == NO_COSTUME_REPLY:
-                self.say("Hmm, I don't see anyone. Step in front of my camera and try again!")
-            else:
-                self.say(reply)
+            self.say(reply or "Hmm, I'm not sure what I'm looking at. Try again!")
         except Exception as e:
             self.get_logger().error(f"Costume compliment failed: {e}")
             self.say("Oops, my eyes are a little blurry. Try again!")
