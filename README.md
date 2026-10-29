@@ -2,6 +2,29 @@
 
 This is the ROS2 Jazzy workspace for the red-crash robotics project.
 
+## The Robot
+
+- Computer: Orange Pi 5B, hostname `red-crash-b`, user `pi`
+  (`ssh pi@red-crash-b.local`)
+- Motors: RoboClaw motor controller (`/dev/roboclaw`)
+- Camera: OAK-D (`/dev/oak-d`)
+- Lidar (`/dev/lidar`)
+- Audio: ReSpeaker microphone and speaker
+- Controller: 8BitDo Pro 3 with 2.4 GHz receiver
+- USB hub with per-port power switches
+
+## Daily Use
+
+1. Switch on all ports on the USB hub.
+2. Power on the robot.
+3. The `car` container and all nodes start on boot. If `docker ps` doesn't
+   show `car`, run `docker start car` (not `./start`, which creates a new
+   container).
+4. Turn on the controller (see below).
+5. Push-to-talk, AI chat and the costume button need internet. The OpenAI key
+   lives in `secrets.env` at the repo root (see `secrets_setup.md`).
+6. Shut down with `sudo shutdown now` before cutting power.
+
 ## Prerequisites
 
 Install Git LFS (required for voice model files):
@@ -42,12 +65,46 @@ This starts the `car` container with:
 - Host networking for rosbridge
 - GNU Screen launching all nodes automatically
 
+`./start` only creates a new container and fails if `car` already exists. It
+ends attached to the container; press `Ctrl-P Ctrl-Q` to detach.
+
+### Device Names (udev rules)
+
+The stable `/dev` names come from udev rules in the repo root:
+
+| Rule file | Device | Name |
+| --- | --- | --- |
+| `99-local.rules` | RoboClaw | `/dev/roboclaw` |
+| `99-local.rules` | OAK-D | `/dev/oak-d` |
+| `99-local.rules` | Lidar | `/dev/lidar` |
+| `99-local.rules` | PS3 controller (old) | `/dev/ps3-joystick` |
+| `89-servo-bus.rules` | HL-340 servo bus adapter (old) | `/dev/servo-bus` |
+
+They are already installed on `red-crash-b`. To install or update them:
+
+```bash
+sudo cp 99-local.rules 89-servo-bus.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules && sudo udevadm trigger
+```
+
+The 8BitDo controller does not match the PS3 rule, so `/dev/ps3-joystick` does
+not exist; `joy_node` finds the controller on its own.
+
 ### Container Management
 
 **Start interactive session:**
 ```bash
 docker exec -it car /bin/bash
 ```
+
+**Attach to the screen session (see node output):**
+
+```bash
+docker exec -it car bash -c 'screen -wipe >/dev/null; screen -x'
+```
+
+Press `Ctrl-A d` to detach and leave the nodes running. `Ctrl-C` stops the
+node in the current tab and `exit` closes the tab.
 
 **Stop container:**
 ```bash
@@ -66,7 +123,7 @@ docker logs car
 
 ## Connecting the 8BitDo Pro 3 Controller
 
-1. Plug the 2.4 GHz adapter into a USB port on the Raspberry Pi.
+1. Plug the 2.4 GHz adapter into a USB port on the Orange Pi.
 2. Set the Mode switch on the back of the controller to S/X (all the way to
    the right). S/X is the only mode that works with the 2.4 GHz adapter.
 3. Press the controller's Start button.
@@ -133,11 +190,25 @@ commands run separately from these controller sound effects.
 
 ## Screen Usage
 
-The container uses GNU Screen to launch multiple ROS2 nodes in separate tabs. Configuration files like `launch_all.screenrc` automatically start all nodes (joy, roboclaw, foxglove, soundboard, speech) in individual screens that you can switch between with Ctrl-A followed by the screen number.
+The container uses GNU Screen to launch the ROS2 nodes in separate tabs, set up
+by `launch_all.screenrc`. To attach from the host, see
+[Container Management](#container-management).
+
+| Tab | Runs |
+| --- | --- |
+| 0 | Shell |
+| 1 | Joystick and teleop (`launch/joy.launch.py`) |
+| 2 | RoboClaw motors (`launch/roboclaw.launch.py`) |
+| 3 | Foxglove bridge |
+| 4 | Soundboard |
+| 5 | Speech, command interpreter, costume compliment (`launch/speech.launch.py`) |
+| 6 | OAK-D camera (`launch/oakd.launch.py`) |
+
+To restart a node, go to its tab, press `Ctrl-C`, then up-arrow and Enter.
 
 **Screen commands:**
-- `Ctrl-A 0-5` - Switch to screen 0-5
-- `Ctrl-A "` - List all screens
+- `Ctrl-A 0-6` - Switch to tab 0-6
+- `Ctrl-A "` - List all tabs
 - `Ctrl-A d` - Detach from screen session
 
 ## ROS2 Workspace Usage
@@ -183,7 +254,7 @@ ros2 launch launch/speech.launch.py
 
 ## Migration Status
 
-This workspace is actively migrating from ROS Noetic to ROS2 Jazzy. See `migration.md` for detailed status.
+This workspace is actively migrating from ROS Noetic to ROS2 Jazzy. See `archived_plans/migration.md` for detailed status.
 
 ## Troubleshooting
 
@@ -199,8 +270,26 @@ Clean and rebuild workspace:
 docker exec car bash -c "cd /root/ros2_ws && rm -rf build install log && colcon build"
 ```
 
-### Network Issues
-Verify host networking and rosbridge:
+### Robot Won't Drive
+Hold B (or A) while moving the left stick. Check tab 2 for RoboClaw errors and
+that `/dev/roboclaw` exists.
+
+### Controller Not Working
+Check the receiver shows up with `lsusb | grep 8BitDo`, the Mode switch is on
+S/X, and `ros2 topic echo /joy` changes when you press buttons.
+
+### Silent Push-to-Talk, Chat or Costume Button
+These need internet and, for chat and costumes, `OPENAI_API_KEY` in
+`secrets.env`. Check the errors in tab 5.
+
+### Speaker Volume
+The robot boots at the saved volume (90%). For quiet dev work:
 ```bash
-docker exec car bash -c "ros2 launch rosbridge_server rosbridge_websocket_launch.xml"
+docker exec car amixer -D hw:Device sset PCM 40%
 ```
+A reboot brings it back to 90%. To change the boot volume, set it and then run
+`sudo alsactl store`. For more volume, raise `speaker_volume_percent` in
+`launch/speech.launch.py` (currently 200; above that it may distort).
+
+### Viewing Topics from a Laptop
+Open Foxglove and connect to `ws://red-crash-b.local:8765`.
