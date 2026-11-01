@@ -162,9 +162,9 @@ index (files in `src/joy_soundboard_ros/sounds/`, named
 | Home | 5 | Says "You're welcome" |
 | Start (+) | 6 | Says "I don't know very much, I'm just a robot after all" |
 | L3 (left stick click) | 7 | Says "I don't know" |
-| R3 (right stick click) | 8 | Introduces itself as Ivy, the Halloween Pumpkin Robot |
-| L1 | 9 | Plays the Mario Kart race-start sound |
-| R1 | 10 | Says "You can take a candy from my head" |
+| R3 (right stick click) | 8 | Plays the Mario Kart race-start sound |
+| L1 | 9 | Says "You can take a candy from my head" |
+| R1 | 10 | Introduces itself as Ivy, the Halloween Pumpkin Robot |
 | D-pad Up | 11 | Says "Happy Halloween" |
 | D-pad Down | 12 | Push-to-talk |
 | D-pad Left | 13 | Takes a photo and compliments any costumes in it |
