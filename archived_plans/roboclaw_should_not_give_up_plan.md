@@ -316,21 +316,35 @@ void RoboClaw::setConnectionState(ConnectionState new_state, const char* reason)
 
 ## Implementation Checklist
 
+**Closed 2026-10-31.** Phase 1 is done in driver commit `615093d`: the node no
+longer dies on USB drops, reconnects about 5 s after the device returns, and
+re-sends serial timeout and PID settings. The red-crash launch file also sets
+`respawn=True` as a backstop.
+
+Unchecked items were deliberately not done:
+- Coast on disconnect: the link is down so the command can't be sent; the
+  RoboClaw's own serial timeout (0.5 s) stops the motors.
+- Dropped-command warnings, configurable retries/thresholds/intervals,
+  reconnect countdown, Foxglove panel, Phase 5 cleanups: not needed so far.
+
+The drops themselves are hardware: the RoboClaw shares one USB 2.0 port (two
+hubs deep) with the OAK-D, speaker and ReSpeaker.
+
 ### Phase 1: Core Resilience (Critical)
-- [ ] Wrap `readSensorGroup()` entire body in try-catch to prevent crashes
-- [ ] Wrap motor command calls in `cmdVelCallback()` in try-catch
-- [ ] Add `attemptReconnection()` non-throwing function
-- [ ] Update `readSensorGroup()` to use `attemptReconnection()`
-- [ ] Test: Unplug USB cable while driving → node stays alive, stops motors
-- [ ] Test: Replug USB cable → node reconnects within 5 seconds
-- [ ] Update diagnostics to show DISCONNECTED state clearly
+- [x] Wrap `readSensorGroup()` entire body in try-catch to prevent crashes (caught by its caller, `mainLoopThread`)
+- [x] Wrap motor command calls in `cmdVelCallback()` in try-catch (also guards the parameter callback and `spin_some()`)
+- [x] Add `attemptReconnection()` non-throwing function (kept the existing reconnect in `readSensorGroup()`; it throws but the caller catches, and now re-sends serial timeout and PID)
+- [x] Update `readSensorGroup()` to use `attemptReconnection()` (see above)
+- [x] Test: Unplug USB cable while driving → node stays alive, stops motors (simulated with USB unbind/bind while publishing zero cmd_vel at 50 Hz)
+- [x] Test: Replug USB cable → node reconnects within 5 seconds
+- [x] Update diagnostics to show DISCONNECTED state clearly
 
 ### Phase 2: Safety Enhancements
-- [ ] Check `getConnectionState()` in `cmdVelCallback()` before sending commands
+- [x] Check `getConnectionState()` in `cmdVelCallback()` before sending commands
 - [ ] Add rate-limited warnings when commands dropped due to DISCONNECTED state
 - [ ] Call `coast()` in `setConnectionState()` when transitioning to DISCONNECTED
 - [ ] Test: Verify motors coast when connection lost
-- [ ] Test: Verify cmd_vel is ignored when disconnected (no crash, just warnings)
+- [x] Test: Verify cmd_vel is ignored when disconnected (no crash; ignored silently, no warnings yet)
 
 ### Phase 3: Configuration & Tuning
 - [ ] Add `max_command_retries` parameter to RoboClaw constructor
@@ -342,17 +356,17 @@ void RoboClaw::setConnectionState(ConnectionState new_state, const char* reason)
 
 ### Phase 4: Diagnostics & Monitoring
 - [ ] Enhance diagnostics to show:
-  - [ ] Connection state (CONNECTED/DISCONNECTED)
-  - [ ] Time since last successful communication
+  - [x] Connection state (CONNECTED/DISCONNECTED)
+  - [x] Time since last successful communication (only while connected)
   - [ ] Time until next reconnection attempt (when DISCONNECTED)
-  - [ ] Consecutive error count
-  - [ ] Last error type and message
+  - [x] Consecutive error count
+  - [x] Last error type and message
 - [ ] Add Foxglove panel recommendations for monitoring connection health
-- [ ] Create test scenario: rapid connect/disconnect cycles
+- [x] Create test scenario: rapid connect/disconnect cycles (8 USB unbind/bind cycles in ~15 s, 3 back-to-back; node stayed up and reconnected)
 
 ### Phase 5: Code Cleanup & Refactoring (Optional)
 - [ ] Remove unused `restartPort()` calls after errors (now handled by state machine)
-- [ ] Consider removing `throw new` (leaks memory) - use `throw` without new
+- [x] Consider removing `throw new` (leaks memory) - use `throw` without new
 - [ ] Audit all `catch (...)` blocks - should catch specific exception types
 - [ ] Consider moving retry logic from `Cmd::execute()` to a central retry manager
 
