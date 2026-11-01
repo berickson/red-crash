@@ -29,6 +29,10 @@ def generate_launch_description():
             package='ros2_roboclaw_driver',
             executable='ros2_roboclaw_driver_node',
             output='screen',
+            # Backstop: restart if the driver still dies (e.g. RoboClaw
+            # missing at startup). Mid-run USB drops are handled in the driver.
+            respawn=True,
+            respawn_delay=2.0,
             parameters=[{
                 # Device connection parameters
                 'device_name': LaunchConfiguration('device_name'),
