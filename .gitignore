@@ -7,4 +7,3 @@ output/
 __pycache__/
 secrets.env
 *.key
-launch/__pycache__/joy.launch.cpython-312.pyc
