@@ -13,6 +13,10 @@ This is the ROS2 Jazzy workspace for the red-crash robotics project.
 - Controller: 8BitDo Pro 3 with 2.4 GHz receiver
 - USB hub with per-port power switches
 
+The desktop GUI is turned off: its sound manager reset the speaker to 40%.
+For one session, run `sudo systemctl start gdm`. To bring it back at every
+boot, run `sudo systemctl set-default graphical.target`.
+
 ## Daily Use
 
 1. Switch on all ports on the USB hub.
