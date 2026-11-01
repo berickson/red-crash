@@ -27,4 +27,4 @@
 	url = git@github.com:berickson/jiggle.git
 [submodule "src/ros2_roboclaw_driver"]
 	path = src/ros2_roboclaw_driver
-	url = https://github.com/wimblerobotics/ros2_roboclaw_driver.git
+	url = https://github.com/berickson/ros2_roboclaw_driver.git
