@@ -61,21 +61,19 @@ def generate_launch_description():
                 'max_linear_velocity': 2.0,
                 
                 # Safety timeout
-                'max_seconds_uncommanded_travel': 0.01,
+                'max_seconds_uncommanded_travel': 0.5,
                 
                 # Publishing settings
                 'publish_joint_states': False,
                 'publish_odom': True,
                 
                 # Robot geometry (from config file)
-                'quad_pulses_per_meter': 1426,
+                'meters_per_quad_pulse': 1.0 / 1426,
                 'quad_pulses_per_revolution': 537.0,
-                'wheel_radius': 0.06,
                 'wheel_separation': 0.414,
                 
                 # Status publishing
                 'roboclaw_status_topic': 'roboclaw_status',
-                'sensor_rate_hz': 20.0,
                 
                 # Serial timeout (seconds, 0.0 disables timeout)
                 'serial_timeout': 0.5,
